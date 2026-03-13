@@ -27,10 +27,10 @@ image_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\tissu
 mask_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\label masks modify"
 save_root = r"C:\Users\amahbod\projects\fulbright\results\unet_watershed"
 
-num_epochs = 10
-batch_size = 32
+num_epochs = 80
+batch_size = 16
 lr = 1e-4
-num_folds = 3
+num_folds = 5
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -80,14 +80,14 @@ def watershed_postprocess(prob):
 
     distance = ndi.distance_transform_edt(binary)
 
-    # coords = peak_local_max(distance, footprint=np.ones((3,3)), labels=binary)
-    # mask = np.zeros(distance.shape, dtype=bool)
-    # mask[tuple(coords.T)] = True
-    # markers,_ = ndi.label(mask)
+    coords = peak_local_max(distance, footprint=np.ones((3,3)), labels=binary)
+    mask = np.zeros(distance.shape, dtype=bool)
+    mask[tuple(coords.T)] = True
+    markers,_ = ndi.label(mask)
 
-    # fast marker detection
-    local_max = distance > (0.5 * distance.max())
-    markers, _ = ndi.label(local_max)
+    # # fast marker detection
+    # local_max = distance > (0.5 * distance.max())
+    # markers, _ = ndi.label(local_max)
 
     labels = watershed(-distance, markers, mask=binary)
 
@@ -221,7 +221,7 @@ bce_loss = torch.nn.BCEWithLogitsLoss()
 # CROSS VALIDATION
 # =============================
 
-kf = KFold(n_splits=num_folds, shuffle=True, random_state=42)
+kf = KFold(n_splits=num_folds, shuffle=True, random_state=19)
 
 all_results = []
 

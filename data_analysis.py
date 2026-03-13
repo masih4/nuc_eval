@@ -2,35 +2,35 @@
 ########################################################################################################################
 #merging samples from original NuInsSeg dataset (downloaded from kaggle)
 
-# import os
-# import shutil
-#
-# # root directory that contains all folders
-# root_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg"
-#
-# # destination folder where all images will be merged
-# output_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\overlay_save_path_vague"
-#
-# os.makedirs(output_dir, exist_ok=True)
-#
-# for root, dirs, files in os.walk(root_dir):
-#
-#
-#     if os.path.basename(root) == "overlay_save_path_vague":
-#         for file in files:
-#             src = os.path.join(root, file)
-#             dst = os.path.join(output_dir, file)
-#
-#             # avoid overwriting files with the same name
-#             base, ext = os.path.splitext(file)
-#             counter = 1
-#             while os.path.exists(dst):
-#                 dst = os.path.join(output_dir, f"{base}_{counter}{ext}")
-#                 counter += 1
-#
-#             shutil.copy2(src, dst)
-#
-# print("All images merged successfully.")
+import os
+import shutil
+
+# root directory that contains all folders
+root_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg"
+
+# destination folder where all images will be merged
+output_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\disk10"
+
+os.makedirs(output_dir, exist_ok=True)
+
+for root, dirs, files in os.walk(root_dir):
+
+
+    if os.path.basename(root) == "disk10":
+        for file in files:
+            src = os.path.join(root, file)
+            dst = os.path.join(output_dir, file)
+
+            # avoid overwriting files with the same name
+            base, ext = os.path.splitext(file)
+            counter = 1
+            while os.path.exists(dst):
+                dst = os.path.join(output_dir, f"{base}_{counter}{ext}")
+                counter += 1
+
+            shutil.copy2(src, dst)
+
+print("All images merged successfully.")
 ########################################################################################################################
 
 # import os
@@ -170,111 +170,111 @@
 # print("\nCSV saved to:", csv_path)
 # print("Modified masks saved to:", output_dir)
 #######################################################################################################################
-# box plots and bar charts
-import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
-
-# Path to CSV
-csv_path = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\stats\v1-v3-v3-v4.csv"
-
-# Load CSV
-df = pd.read_csv(csv_path)
-
-# -----------------------------
-# Columns
-# -----------------------------
-instance_cols = [
-    "instances_v1",
-    "instances_v2",
-    "instances_v3",
-    "instances_v4"
-]
-
-area_cols = [
-    "instance_area_v1",
-    "instance_area_v2",
-    "instance_area_v3",
-    "instance_area_v4"
-]
-
-labels = ["V1", "V2", "V3", "V4"]
-
-
-# =============================
-# BOX PLOT — INSTANCES
-# =============================
-plt.figure(figsize=(6,5))
-
-plt.boxplot([df[c] for c in instance_cols], labels=labels)
-
-plt.ylabel("Number of Instances", fontsize=16)
-plt.xlabel("Dataset Version", fontsize=16)
-plt.title("Distribution of Instances per Image", fontsize=16)
-plt.tick_params(axis='x', labelsize=14)   # increases v1,v2,v3,v4
-plt.tick_params(axis='y', labelsize=14)   # increases y-axis numbers
-
-plt.tight_layout()
-
-plt.savefig("boxplot_instances.png", dpi=600)
-
-plt.show()
-
-
-# =============================
-# BOX PLOT — AREA
-# =============================
-plt.figure(figsize=(6,5))
-
-plt.boxplot([df[c] for c in area_cols], labels=labels)
-
-plt.ylabel("Instance Area (%)", fontsize=16)
-plt.xlabel("Dataset Version", fontsize=16)
-plt.title("Distribution of Instance Area Percentage", fontsize=16)
-plt.tick_params(axis='x', labelsize=14)   # increases v1,v2,v3,v4
-plt.tick_params(axis='y', labelsize=14)   # increases y-axis numbers
-
-plt.tight_layout()
-
-plt.savefig("boxplot_instance_area.png", dpi=600)
-
-plt.show()
-
-
-# =============================
-# BAR CHART — MEAN INSTANCES
-# =============================
-means_instances = [df[c].mean() for c in instance_cols]
-
-plt.figure(figsize=(6,5))
-
-plt.bar(labels, means_instances)
-plt.ylabel("Mean Number of Instances")
-plt.xlabel("Dataset Version")
-plt.title("Average Instances per Image")
-
-plt.tight_layout()
-
-plt.savefig("barchart_instances_mean.png", dpi=600)
-
-plt.show()
-
-
-# =============================
-# BAR CHART — MEAN AREA
-# =============================
-means_area = [df[c].mean() for c in area_cols]
-
-plt.figure(figsize=(6,5))
-
-plt.bar(labels, means_area)
-
-plt.ylabel("Mean Instance Area (%)")
-plt.xlabel("Dataset Version")
-plt.title("Average Instance Area")
-
-plt.tight_layout()
-
-plt.savefig("barchart_instance_area_mean.png", dpi=600)
-
-plt.show()
+# # box plots and bar charts
+# import pandas as pd
+# import matplotlib.pyplot as plt
+# import numpy as np
+#
+# # Path to CSV
+# csv_path = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\stats\v1-v3-v3-v4.csv"
+#
+# # Load CSV
+# df = pd.read_csv(csv_path)
+#
+# # -----------------------------
+# # Columns
+# # -----------------------------
+# instance_cols = [
+#     "instances_v1",
+#     "instances_v2",
+#     "instances_v3",
+#     "instances_v4"
+# ]
+#
+# area_cols = [
+#     "instance_area_v1",
+#     "instance_area_v2",
+#     "instance_area_v3",
+#     "instance_area_v4"
+# ]
+#
+# labels = ["V1", "V2", "V3", "V4"]
+#
+#
+# # =============================
+# # BOX PLOT — INSTANCES
+# # =============================
+# plt.figure(figsize=(6,5))
+#
+# plt.boxplot([df[c] for c in instance_cols], labels=labels)
+#
+# plt.ylabel("Number of Instances", fontsize=16)
+# plt.xlabel("Dataset Version", fontsize=16)
+# plt.title("Distribution of Instances per Image", fontsize=16)
+# plt.tick_params(axis='x', labelsize=14)   # increases v1,v2,v3,v4
+# plt.tick_params(axis='y', labelsize=14)   # increases y-axis numbers
+#
+# plt.tight_layout()
+#
+# plt.savefig("boxplot_instances.png", dpi=600)
+#
+# plt.show()
+#
+#
+# # =============================
+# # BOX PLOT — AREA
+# # =============================
+# plt.figure(figsize=(6,5))
+#
+# plt.boxplot([df[c] for c in area_cols], labels=labels)
+#
+# plt.ylabel("Instance Area (%)", fontsize=16)
+# plt.xlabel("Dataset Version", fontsize=16)
+# plt.title("Distribution of Instance Area Percentage", fontsize=16)
+# plt.tick_params(axis='x', labelsize=14)   # increases v1,v2,v3,v4
+# plt.tick_params(axis='y', labelsize=14)   # increases y-axis numbers
+#
+# plt.tight_layout()
+#
+# plt.savefig("boxplot_instance_area.png", dpi=600)
+#
+# plt.show()
+#
+#
+# # =============================
+# # BAR CHART — MEAN INSTANCES
+# # =============================
+# means_instances = [df[c].mean() for c in instance_cols]
+#
+# plt.figure(figsize=(6,5))
+#
+# plt.bar(labels, means_instances)
+# plt.ylabel("Mean Number of Instances")
+# plt.xlabel("Dataset Version")
+# plt.title("Average Instances per Image")
+#
+# plt.tight_layout()
+#
+# plt.savefig("barchart_instances_mean.png", dpi=600)
+#
+# plt.show()
+#
+#
+# # =============================
+# # BAR CHART — MEAN AREA
+# # =============================
+# means_area = [df[c].mean() for c in area_cols]
+#
+# plt.figure(figsize=(6,5))
+#
+# plt.bar(labels, means_area)
+#
+# plt.ylabel("Mean Instance Area (%)")
+# plt.xlabel("Dataset Version")
+# plt.title("Average Instance Area")
+#
+# plt.tight_layout()
+#
+# plt.savefig("barchart_instance_area_mean.png", dpi=600)
+#
+# plt.show()
