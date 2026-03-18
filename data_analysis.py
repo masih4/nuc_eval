@@ -32,7 +32,7 @@ for root, dirs, files in os.walk(root_dir):
 
 print("All images merged successfully.")
 ########################################################################################################################
-
+# creating labeled mask with vague areas removed
 # import os
 # import numpy as np
 # import pandas as pd
