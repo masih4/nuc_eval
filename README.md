@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="nuceval_scientific_dark.png" alt="NucEval Workflow" width="100%">
+  <img src="readme_figs/nuceval.png" alt="NucEval Workflow" width="100%">
 </p>
 
 <h1 align="center">NucEval: Robust Evaluation of Nuclei Instance Segmentation through Handling Vague Regions, Score Normalization, Overlapping Instances, and Border Uncertainty</h1>
