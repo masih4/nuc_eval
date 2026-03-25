@@ -691,91 +691,210 @@
 # plot_model(cellvit, "CellViT Performance", "cellvit_bar.png")
 
 #######################################################################################################################
+# # Tables to barcharts
+# import numpy as np
+# import matplotlib.pyplot as plt
+#
+# # -------------------------
+# # Data
+# # -------------------------
+# labels = ["baseline", "#1", "#1,2", "#1,2,3", "#1,2,3,4"]
+#
+# # entire NuInsSeg
+# hovernet  = [53.40, 56.17, 57.05, 58.18, 64.07]
+# hovernext = [54.17, 56.80, 58.29, 58.45, 64.92]
+# cellvit   = [56.44, 59.72, 60.92, 61.93, 68.44]
+#
+# # # sub NuInsSeg
+# # hovernet  = [28.68, 40.03, 60.21, 60.90, 67.13]
+# # hovernext = [28.00, 40.35, 64.95, 64.18, 70.61]
+# # cellvit   = [29.07, 43.45, 65.66, 66.15, 72.26]
+#
+# models = ["Hover-Net", "Hover-Next", "CellViT"]
+# data = [hovernet, hovernext, cellvit]
+#
+# # -------------------------
+# # Colors (consistent across models)
+# # -------------------------
+# colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple"]
+#
+# # -------------------------
+# # Layout settings
+# # -------------------------
+# n_models = len(models)
+# n_bars = len(labels)
+#
+# bar_width = 0.15
+# group_spacing = 0.6
+#
+# # Compute x positions
+# x_positions = []
+# for i in range(n_models):
+#     start = i * (n_bars * bar_width + group_spacing)
+#     x_positions.append([start + j * bar_width for j in range(n_bars)])
+#
+# # -------------------------
+# # Plot
+# # -------------------------
+# plt.figure(figsize=(10, 6))
+#
+# for i, model_data in enumerate(data):
+#     for j, value in enumerate(model_data):
+#         plt.bar(
+#             x_positions[i][j],
+#             value,
+#             bar_width,
+#             color=colors[j]
+#         )
+#
+# # X-axis: model names centered under each group
+# group_centers = [np.mean(pos) for pos in x_positions]
+# plt.xticks(group_centers, models, fontsize=16)
+#
+# # Labels and title
+# plt.ylabel("PQ (%)", fontsize=16)
+# #plt.title("PQ Comparison Across Models and Modifications", fontsize=16)
+#
+# # Y-axis start from 40
+# plt.ylim(25, 80)
+#
+# # Grid
+# plt.grid(axis="y", linestyle="--", alpha=0.5)
+#
+# # Legend (modifications)
+# handles = [
+#     plt.Rectangle((0, 0), 1, 1, color=colors[i])
+#     for i in range(n_bars)
+# ]
+# #plt.legend(handles, labels, title="Modifications")
+# plt.legend(
+#     handles,
+#     labels,
+#     title="Modifications",
+#     fontsize=13,
+#     title_fontsize=14
+# )
+#
+# # Layout & save
+# plt.tight_layout()
+# plt.savefig("pq_grouped_models.png", dpi=300)
+# plt.show()
+
+#######################################################################################################################
+# visualization of ring effect
+import os
 import numpy as np
+import tifffile
+import cv2
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+from tqdm import tqdm
 
-# -------------------------
-# Data
-# -------------------------
-labels = ["baseline", "#1", "#1,2", "#1,2,3", "#1,2,3,4"]
 
-# entire NuInsSeg
-hovernet  = [53.40, 56.17, 57.05, 58.18, 64.07]
-hovernext = [54.17, 56.80, 58.29, 58.45, 64.92]
-cellvit   = [56.44, 59.72, 60.92, 61.93, 68.44]
+# -------------------------------------------------
+# Paths
+# -------------------------------------------------
+gt_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\label masks modify"
+tissue_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\tissue images"
+output_dir = r"C:\Users\amahbod\projects\fulbright\results\ring_figures"
 
-# # sub NuInsSeg
-# hovernet  = [28.68, 40.03, 60.21, 60.90, 67.13]
-# hovernext = [28.00, 40.35, 64.95, 64.18, 70.61]
-# cellvit   = [29.07, 43.45, 65.66, 66.15, 72.26]
+ring_widths = [0, 1, 2, 4, 6]
 
-models = ["Hover-Net", "Hover-Next", "CellViT"]
-data = [hovernet, hovernext, cellvit]
+# -------------------------------------------------
+# Create output directory
+# -------------------------------------------------
+os.makedirs(output_dir, exist_ok=True)
 
-# -------------------------
-# Colors (consistent across models)
-# -------------------------
-colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple"]
+# -------------------------------------------------
+# Process all label masks
+# -------------------------------------------------
+gt_files = sorted([f for f in os.listdir(gt_dir) if f.endswith(".tif")])
 
-# -------------------------
-# Layout settings
-# -------------------------
-n_models = len(models)
-n_bars = len(labels)
+for gt_name in tqdm(gt_files, desc="Generating ring figures"):
+    gt_path = os.path.join(gt_dir, gt_name)
+    base = os.path.splitext(gt_name)[0]
 
-bar_width = 0.15
-group_spacing = 0.6
+    gt = tifffile.imread(gt_path).astype(np.int32)
+    shape = gt.shape
 
-# Compute x positions
-x_positions = []
-for i in range(n_models):
-    start = i * (n_bars * bar_width + group_spacing)
-    x_positions.append([start + j * bar_width for j in range(n_bars)])
+    # Load tissue image
+    tissue_path = os.path.join(tissue_dir, base + ".png")
+    if os.path.exists(tissue_path):
+        tissue_img = cv2.imread(tissue_path)
+        tissue_img = cv2.cvtColor(tissue_img, cv2.COLOR_BGR2RGB)
+    else:
+        tissue_img = None
 
-# -------------------------
-# Plot
-# -------------------------
-plt.figure(figsize=(10, 6))
+    # Remap labels to contiguous
+    inst_ids = [i for i in np.unique(gt) if i != 0]
+    label_map = np.zeros(shape, dtype=np.int32)
+    masks = []
+    for idx, inst_id in enumerate(inst_ids):
+        m = (gt == inst_id).astype(np.uint8)
+        masks.append(m)
+        label_map[m > 0] = idx + 1
 
-for i, model_data in enumerate(data):
-    for j, value in enumerate(model_data):
-        plt.bar(
-            x_positions[i][j],
-            value,
-            bar_width,
-            color=colors[j]
-        )
+    n_instances = len(masks)
+    if n_instances == 0:
+        continue
 
-# X-axis: model names centered under each group
-group_centers = [np.mean(pos) for pos in x_positions]
-plt.xticks(group_centers, models, fontsize=16)
+    # Extract tissue type from filename (e.g. human_bladder_01 -> Bladder)
+    parts = base.split('_')
+    tissue_type = '_'.join(parts[1:-1]).replace('_', ' ').title()
 
-# Labels and title
-plt.ylabel("PQ (%)", fontsize=16)
-#plt.title("PQ Comparison Across Models and Modifications", fontsize=16)
+    # Colormap
+    np.random.seed(42)
+    colors = [(0, 0, 0)]
+    for _ in range(n_instances + 1):
+        colors.append(tuple(np.random.uniform(0.2, 1.0, 3)))
+    cmap = ListedColormap(colors)
 
-# Y-axis start from 40
-plt.ylim(25, 80)
+    n_cols = 1 + len(ring_widths)  # tissue + ring variations
+    fig, axes = plt.subplots(1, n_cols, figsize=(4 * n_cols, 4))
 
-# Grid
-plt.grid(axis="y", linestyle="--", alpha=0.5)
+    # First column: tissue image
+    if tissue_img is not None:
+        axes[0].imshow(tissue_img)
+    else:
+        axes[0].text(0.5, 0.5, 'Tissue image\nnot found', ha='center', va='center',
+                     transform=axes[0].transAxes, fontsize=10)
+    axes[0].set_title(f'Tissue ({tissue_type})', fontsize=30)
+    axes[0].axis('off')
 
-# Legend (modifications)
-handles = [
-    plt.Rectangle((0, 0), 1, 1, color=colors[i])
-    for i in range(n_bars)
-]
-#plt.legend(handles, labels, title="Modifications")
-plt.legend(
-    handles,
-    labels,
-    title="Modifications",
-    fontsize=13,
-    title_fontsize=14
-)
+    for idx, rw in enumerate(ring_widths):
+        ax = axes[idx + 1]
 
-# Layout & save
-plt.tight_layout()
-plt.savefig("pq_grouped_models.png", dpi=300)
-plt.show()
+        if rw == 0:
+            vis = label_map.copy()
+        else:
+            kernel = cv2.getStructuringElement(
+                cv2.MORPH_ELLIPSE, (2 * rw + 1, 2 * rw + 1)
+            )
+            # Build global ring mask from all instances
+            ring_mask = np.zeros(shape, dtype=np.uint8)
+            for m in masks:
+                dilated = cv2.dilate(m, kernel, iterations=1)
+                eroded = cv2.erode(m, kernel, iterations=1)
+                ring = dilated - eroded
+                ring_mask = np.maximum(ring_mask, ring)
 
+            # Apply ring
+            ring_bool = ring_mask > 0
+            vis = np.zeros(shape, dtype=np.int32)
+            for i, m in enumerate(masks):
+                m_clean = m.copy()
+                m_clean[ring_bool] = 0
+                vis[m_clean > 0] = i + 1
+
+        ax.imshow(vis, cmap=cmap, interpolation='nearest', vmin=0, vmax=n_instances)
+        ax.set_title(f'Ring = {rw}', fontsize=30)
+        ax.axis('off')
+
+    #plt.suptitle(base, fontsize=13, fontweight='bold')
+    plt.tight_layout()
+    out_path = os.path.join(output_dir, base + "_ring_comparison.png")
+    plt.savefig(out_path, dpi=200, bbox_inches='tight')
+    plt.close()
+    #print(f"Saved: {out_path}")
+
+print(f"\nDone. {len(gt_files)} figures saved to: {output_dir}")
