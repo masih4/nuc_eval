@@ -2,7 +2,7 @@
   <img src="nuceval_scientific_dark.png" alt="NucEval Workflow" width="100%">
 </p>
 
-<h1 align="center">NucEval</h1>
+<h1 align="center">NucEval: Robust Evaluation of Nuclei Instance Segmentation through Handling Vague Regions, Score Normalization, Overlapping Instances, and Border Uncertainty</h1>
 
 <p align="center">
   <b>Robust Evaluation Pipeline for Nuclei Instance Segmentation</b>
