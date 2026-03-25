@@ -783,7 +783,7 @@ def run_training(folds, device, epochs=3, batch_size_num=4):
         #         print("Saved new best model:", save_path)
 
         # load best model before final evaluation
-        checkpoint = torch.load(f"checkpoints/best_model_fold_{fold + 1}.pth")
+        checkpoint = torch.load(f"C://Users//amahbod//projects//fulbright//results//results_hoevenet_correct post process_53.40//checkpoints_hovernet//best_model_fold_{fold + 1}.pth")
 
         model.load_state_dict(checkpoint["model_state_dict"])
 
