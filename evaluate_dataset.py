@@ -10,8 +10,60 @@ import numpy as np
 import pandas as pd
 import tifffile
 import cv2
+from mahotas import imread
 from tqdm import tqdm
 from nuceval import NucEval
+
+
+from nuceval import NucEval
+import tifffile
+
+gt = tifffile.imread("./examples/GT/human_bladder_01.tif")
+gt = "./examples/GT/human_bladder_01_roiset"
+# gt_dir = r"./examples/GT/human_bladder_01_png_masks"
+# gt = [cv2.imread(os.path.join(gt_dir, f), cv2.IMREAD_GRAYSCALE) // 255
+#          for f in sorted(os.listdir(gt_dir)) if f.endswith('.png')]
+
+
+#example with .tif format
+pred = np.load("./examples/Prediction/human_bladder_01.npy") #example with .tif format
+amb_mask = imread("./examples/amb_masks/human_bladder_01.png")
+
+# All features enabled
+result = NucEval(gt, pred,
+                 amb=amb_mask,
+                 normalized=True,
+                 ring_width=2,
+                 match_iou=0.5)
+
+print(f"Dice: {result['dice']:.4f}")
+print(f"PQ:   {result['pq']:.4f}")
+print(f"Nuclei: {result['num_nuclei']}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # -------------------------------------------------
