@@ -4,17 +4,15 @@
 
 <h1 align="center">NucEval: Robust Evaluation of Nuclei Instance Segmentation through Handling Vague Regions, Score Normalization, Overlapping Instances, and Border Uncertainty</h1>
 
-<p align="center">
-  <b>Robust Evaluation Pipeline for Nuclei Instance Segmentation</b>
-</p>
 
 <p align="center">
-  <a href="#installation">Installation</a> •
+  <a href="#requirements">Requirements</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#features">Features</a> •
-  <a href="#api-reference">API Reference</a> •
+  <a href="#interface">Interface</a> •
   <a href="#examples">Examples</a> •
-  <a href="#citation">Citation</a>
+  <a href="#citation">Citation</a> •
+  <a href="#references">References</a>
 </p>
 
 ---
@@ -25,22 +23,22 @@ Standard nuclei segmentation evaluation has several known issues that can lead t
 
 | Problem | Impact | NucEval Solution |
 |---------|--------|------------------|
-| **Ambiguous regions** | Annotators flag uncertain areas, but metrics still penalize predictions there | Instances overlapping vague zones are excluded before scoring |
-| **Overlapping annotations** | ROI-based GT allows overlapping nuclei, but label maps force one label per pixel — losing boundary information | Accepts ROI files directly as a list of independent binary masks |
+| **Ambiguous regions** | Annotators identify uncertain regions; however, evaluation metrics still penalize or reward predictions within these areas. | Instances that partially overlap with vague zones, as determined by a predefined threshold, are excluded prior to scoring. |
+| **Overlapping annotations** | ROI-based GT allows overlapping nuclei, but label maps force one label per pixel — losing boundary information | Accepts ROI files or list of binary masks (one instance per mask)|
+| **Score normalization** | Simple averaging treats images with 3 nuclei the same as images with 300 | Optional nuclei-weighted averaging across images of a dataset |
 | **Border uncertainty** | Exact nucleus boundaries are inherently uncertain by a few pixels | Boundary ring masks out uncertain pixels from both GT and prediction |
-| **Score normalization** | Simple averaging treats images with 3 nuclei the same as images with 300 | Optional nuclei-weighted averaging across a dataset |
 
 NucEval wraps all of these into **a single function call** with sensible defaults — so the simplest call gives you standard evaluation, and each feature can be enabled independently.
 
 ---
 
-## Installation
+## Requirements
 
 ```bash
 pip install numpy scipy opencv-python
 ```
 
-Then copy `nuceval.py` into your project. That's it — single file, no build step.
+Then copy `nuceval.py` into your project. That's it! single file, no build step.
 
 **Dependencies:** NumPy, SciPy, OpenCV (cv2)
 
@@ -63,7 +61,32 @@ That's all you need for basic usage. Every other feature is opt-in.
 
 ## Features
 
-### 1. Flexible GT formats
+### 1. Ambiguous region handling
+
+Exclude nuclei that overlap with annotator-flagged uncertain regions:
+
+```python
+result = NucEval(gt, pred, amb=amb_mask)
+
+# Custom overlap threshold (default: 0.25)
+result = NucEval(gt, pred, amb=amb_mask, overlap_thresh_amb=0.5)
+```
+
+An instance is removed (from both prediction and GT) if more than `overlap_thresh_amb` fraction of its area falls in the ambiguous zone.
+
+
+### 2. Score normalization
+
+Enable nuclei-weighted averaging across images of a dataset:
+
+```python
+result = NucEval(gt, pred, normalized=True)
+# result now includes 'num_nuclei': 24
+```
+
+Use `num_nuclei` to compute weighted means, so images with more nuclei contribute proportionally more to the dataset score.
+
+### 3. Handeling overlapping instances (with flexible GT formats)
 
 NucEval auto-detects the ground truth format:
 
@@ -77,65 +100,35 @@ result = NucEval("path/to/roiset/", pred)
 # List of binary masks (from any source)
 result = NucEval([mask1, mask2, mask3], pred)
 ```
+Examples of accepted annotation formats for an image can be found in the [annotation_examples](./annotation_examples) folder.
 
-### 2. Ambiguous region handling
-
-Exclude nuclei that overlap with annotator-flagged uncertain regions:
-
-```python
-result = NucEval(gt, pred, amb=amb_mask)
-
-# Custom overlap threshold (default: 0.25)
-result = NucEval(gt, pred, amb=amb_mask, overlap_thresh_amb=0.5)
-```
-
-An instance is removed if more than `overlap_thresh_amb` fraction of its area falls in the ambiguous zone.
-
-### 3. Boundary uncertainty ring
+### 4. Boundary uncertainty ring
 
 Account for annotation uncertainty at nucleus borders:
 
 ```python
-result = NucEval(gt, pred, ring_width=2)
+result = NucEval(gt, pred, ring_width=1) #(0 = disabled)
 ```
 
 For each GT instance, the mask is eroded and dilated by `ring_width` pixels. The ring between the eroded core and the dilated boundary is masked out from **both** GT and prediction before scoring. This prevents penalizing predictions for disagreeing with GT in the inherently uncertain boundary zone.
 
 <p align="center">
-  <img src="ring_width_comparison.png" alt="Ring Width Comparison" width="90%">
+  <img src="readme_figs/human_bladder_12_ring_comparison.png" alt="Ring Width Comparison" width="90%">
 </p>
 
-### 4. Score normalization
 
-Enable nuclei-weighted averaging across a dataset:
 
-```python
-result = NucEval(gt, pred, normalized=True)
-# result now includes 'num_nuclei': 24
-```
+### Others: configurable PQ matching and selective metrics:
 
-Use `num_nuclei` to compute weighted means, so images with more nuclei contribute proportionally more to the dataset score.
-
-### 5. Configurable PQ matching
-
-Adjust the IoU threshold for instance matching:
+Adjust the IoU threshold for instance matching (this threshold is part of PQ impelentaion [1]):
 
 ```python
-# Standard (default)
-result = NucEval(gt, pred, match_iou=0.5)
+# Configurable IoU matching (default Standard)
+result = NucEval(gt, pred, match_iou=0.5) #(default: 0.5)
 
-# Lenient matching
-result = NucEval(gt, pred, match_iou=0.25)
 
-# Strict matching
-result = NucEval(gt, pred, match_iou=0.75)
-```
+# Compute only what you need (selective metrics):
 
-### 6. Selective metrics
-
-Compute only what you need:
-
-```python
 # Only Dice and PQ
 result = NucEval(gt, pred, metrics=["dice", "pq"])
 # {'dice': 0.92, 'pq': 0.79}
@@ -146,10 +139,10 @@ result = NucEval(gt, pred, metrics=["aji", "dq", "sq", "pq"])
 
 ---
 
-## API Reference
+## Interface
 
 ```python
-NucEval(ground_truth, prediction,
+NucEval(ground_truth, prediction,  # both with size of (H,W)
         amb=None,                  # Ambiguous mask (H,W), non-zero = ambiguous
         normalized=False,          # Include num_nuclei in output
         ring_width=0,              # Boundary ring width in pixels (0 = disabled)
@@ -160,16 +153,16 @@ NucEval(ground_truth, prediction,
 
 **Parameters:**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `ground_truth` | `ndarray` / `list` / `str` | *required* | Label map, list of binary masks, or path to ROI directory |
-| `prediction` | `ndarray` | *required* | Instance label map (H,W), 0 = background |
-| `amb` | `ndarray` or `None` | `None` | Ambiguous region mask |
-| `normalized` | `bool` | `False` | If True, include `num_nuclei` in output |
-| `ring_width` | `int` | `0` | Boundary ring width (0 = no ring) |
-| `overlap_thresh_amb` | `float` | `0.25` | Ambiguous overlap threshold |
-| `match_iou` | `float` | `0.5` | PQ matching IoU threshold |
-| `metrics` | `list` or `None` | `None` | Subset of `["dice", "aji", "dq", "sq", "pq"]` |
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `ground_truth`       | *required*   | Label map, list of binary masks, or path to ROI directory |
+| `prediction`         |  *required*  | Instance label map (H,W), 0 = background |
+| `amb`                | `None`       | Ambiguous region mask |
+| `normalized`         |  `False`     | If True, include `num_nuclei` in output |
+| `ring_width`         |  `0`         | Boundary ring width (0 = no ring) |
+| `overlap_thresh_amb` |  `0.25`      | Ambiguous overlap threshold |
+| `match_iou`          |  `0.5`       | PQ matching IoU threshold |
+| `metrics`            |  `None`      | Subset of `["dice", "aji", "dq", "sq", "pq"]` |
 
 **Returns:** `dict` with requested metric scores.
 
@@ -199,110 +192,50 @@ print(f"Nuclei: {result['num_nuclei']}")
 ```
 
 ### Dataset evaluation with CSV output
-
-```python
-import os
-import numpy as np
-import pandas as pd
-import tifffile
-import cv2
-from tqdm import tqdm
-from nuceval import NucEval
-
-pred_dir = "path/to/predictions"
-gt_dir = "path/to/ground_truth"       # .tif label maps
-gt_roi_dir = "path/to/roi_sets"       # ROI directories (optional)
-amb_dir = "path/to/ambiguous_masks"   # ambiguous masks (optional)
-
-pred_files = sorted([f for f in os.listdir(pred_dir)
-                     if f.endswith((".tif", ".tiff", ".npy"))])
-
-results = []
-
-for name in tqdm(pred_files):
-    base = os.path.splitext(name)[0]
-
-    # Load prediction
-    if name.endswith(".npy"):
-        pred = np.load(os.path.join(pred_dir, name))
-    else:
-        pred = tifffile.imread(os.path.join(pred_dir, name))
-
-    # Auto-detect GT format
-    roi_path = os.path.join(gt_roi_dir, base + "_roiset")
-    gt_path = os.path.join(gt_dir, base + ".tif")
-
-    if os.path.isdir(roi_path):
-        gt = roi_path
-    elif os.path.exists(gt_path):
-        gt = tifffile.imread(gt_path)
-    else:
-        continue
-
-    # Load ambiguous mask (optional)
-    amb = None
-    amb_path = os.path.join(amb_dir, base + ".png")
-    if os.path.exists(amb_path):
-        amb = cv2.imread(amb_path, cv2.IMREAD_GRAYSCALE)
-
-    # Evaluate
-    scores = NucEval(gt, pred, amb=amb, normalized=True, ring_width=2)
-    scores["image"] = name
-    results.append(scores)
-
-# Save to CSV
-df = pd.DataFrame(results)
-metrics = ["dice", "aji", "dq", "sq", "pq"]
-
-# Weighted mean
-total = df["num_nuclei"].sum()
-weighted = {m: (df[m] * df["num_nuclei"]).sum() / total for m in metrics}
-print("Weighted mean:", weighted)
-
-df.to_csv("results.csv", index=False)
-```
-
+Run `evaluate_dataset.py`
 ---
-
 ## Metrics
-
+The core implementation is adapted from [1].
 | Metric | What it measures | Range |
 |--------|-----------------|-------|
-| **Dice** | Pixel-level overlap (binary foreground) | 0–1 |
-| **AJI** | Aggregated Jaccard Index across all instances | 0–1 |
-| **DQ** | Detection Quality — F1 score of instance matching | 0–1 |
-| **SQ** | Segmentation Quality — mean IoU of matched pairs | 0–1 |
-| **PQ** | Panoptic Quality = DQ × SQ | 0–1 |
+| **Dice** | Pixel-level overlap (binary foreground) | 0-1 |
+| **AJI**  | Aggregated Jaccard Index  | 0–1 |
+| **DQ**   | Detection Quality — F1 score of instance matching | 0–1 |
+| **SQ**   | Segmentation Quality — mean IoU of matched pairs | 0–1 |
+| **PQ**   | Panoptic Quality = DQ × SQ | 0–1 |
 
 ---
 
-## How the boundary ring works
+## Models
+We evaluated NucEval using predictions obtained from three trained models: Hover-Net [2], Hover-Next [3], and CellViT [4].  
+The implementations are available in the original publications. The 5-fold cross-validation used in this study for each model is also available in the [hover-net](./hover-net), [hover-next](./hover-next), and [CellViT](./CellViT) folders.
 
-For each GT instance, the ring is computed per-instance then unioned into a global mask:
 
-1. **Erode** the instance mask by `ring_width` pixels → confident core
-2. **Dilate** the instance mask by `ring_width` pixels → outer boundary
-3. **Ring** = dilated − eroded (covers uncertainty in both directions)
-4. Union all per-instance rings into one mask
-5. Zero out ring pixels from **both** GT and prediction
-6. Compute metrics on the remaining pixels
 
 ---
 
 ## Citation
 
-If you use NucEval in your research, please cite:
+If you use NucEval in your research, please cite (will be updated upon publication):
 
 ```bibtex
 @software{nuceval,
-  title={NucEval: Robust Evaluation Pipeline for Nuclei Instance Segmentation},
-  author={},
-  year={2025},
-  url={https://github.com/}
+  title={NucEval: Robust Evaluation of Nuclei Instance Segmentation through Handling Vague Regions, Score Normalization, Overlapping Instances, and Border Uncertainty},
+  author={Amirreza Mahboda, Ramona Woitek, Jeanne Shen},
+  year={2026},
+  url={https://github.com/masih4/nuc_eval}
 }
 ```
 
 ---
+
+## References
+[1] https://github.com/vqdang/hover_net  
+[2] Graham S, Vu QD, Raza SE, Azam A, Tsang YW, Kwak JT, Rajpoot N. Hover-net: Simultaneous segmentation and classification of nuclei in multi-tissue histology images. Medical image analysis. 2019 Dec 1;58:101563.  
+[3] Baumann E, Dislich B, Rumberger JL, Nagtegaal ID, Martinez MR, Zlobec I. Hover-next: A fast nuclei segmentation and classification pipeline for next generation histopathology. InMedical Imaging with Deep Learning 2024 Dec 23.  
+[4] Hörst F, Rempe M, Heine L, Seibold C, Keyl J, Baldini G, Ugurel S, Siveke J, Grünwald B, Egger J, Kleesiek J. Cellvit: Vision transformers for precise cell segmentation and classification. Medical image analysis. 2024 May 1;94:103143.  
+
+
 
 ## License
 
