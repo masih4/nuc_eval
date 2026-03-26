@@ -100,7 +100,7 @@ result = NucEval("path/to/roiset/", pred)
 # List of binary masks (from any source)
 result = NucEval([mask1, mask2, mask3], pred)
 ```
-Examples of accepted annotation formats for an image can be found in the [annotation_examples](./annotation_examples) folder.
+Examples of accepted annotation formats for an image can be found in the [examples](./examples) folder.
 
 ### 4. Boundary uncertainty ring
 
@@ -217,8 +217,8 @@ The core implementation is adapted from [1].
 |--------|-----------------|-------|
 | **Dice** | Pixel-level overlap (binary foreground) | 0-1 |
 | **AJI**  | Aggregated Jaccard Index  | 0–1 |
-| **DQ**   | Detection Quality — F1 score of instance matching | 0–1 |
-| **SQ**   | Segmentation Quality — mean IoU of matched pairs | 0–1 |
+| **DQ**   | Detection Quality - F1 score of instance matching | 0–1 |
+| **SQ**   | Segmentation Quality - mean IoU of matched pairs | 0–1 |
 | **PQ**   | Panoptic Quality = DQ × SQ | 0–1 |
 
 ---
