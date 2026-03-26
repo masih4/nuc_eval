@@ -175,9 +175,19 @@ NucEval(ground_truth, prediction,  # both with size of (H,W)
 ```python
 from nuceval import NucEval
 import tifffile
+from mahotas import imread
 
-gt = tifffile.imread("ground_truth.tif") #example with .tif format
-pred = tifffile.imread("prediction.tif") #example with .tif format
+
+gt = tifffile.imread("./examples/GT/human_bladder_01.tif") # case 1
+####################################################################
+gt = "./examples/GT/human_bladder_01_roiset" # case 2
+####################################################################
+gt_dir = r"./examples/GT/human_bladder_01_png_masks" # case 3
+gt = [cv2.imread(os.path.join(gt_dir, f), cv2.IMREAD_GRAYSCALE) // 255
+          for f in sorted(os.listdir(gt_dir)) if f.endswith('.png')]
+####################################################################
+pred = np.load("./examples/Prediction/human_bladder_01.npy") #example with .npy format (could be also .tif)
+amb_mask = imread("./examples/amb_masks/human_bladder_01.png")
 
 # All features enabled
 result = NucEval(gt, pred,
@@ -189,6 +199,11 @@ result = NucEval(gt, pred,
 print(f"Dice: {result['dice']:.4f}")
 print(f"PQ:   {result['pq']:.4f}")
 print(f"Nuclei: {result['num_nuclei']}")
+
+# Case 1:  Dice: 0.8833, PQ:   0.6742, Nuclei: 19
+# Case 2:  Dice: 0.8883, PQ:   0.6787, Nuclei: 19
+# Case 3:  Dice: 0.8883, PQ:   0.6787, Nuclei: 19
+
 ```
 
 ### Dataset evaluation with CSV output
