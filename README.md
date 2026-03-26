@@ -210,7 +210,7 @@ The core implementation is adapted from [1].
 
 ## Models
 We evaluated NucEval using predictions obtained from three trained models: Hover-Net [2], Hover-Next [3], and CellViT [4].  
-The implementations are available in the original publications. The 5-fold cross-validation used in this study for each model is also available in the [hover-net](./hover_net), [hover-next](./hover_next), and [CellViT](./CellViT) folders.
+The implementations are available in the original publications. The 5-fold cross-validation used in this study for each model is also available in the [hover-net](./hover_net) (`run_hovernetFolds.py`), [hover-next](./hover_next) (`run_hovernextFolds.py`), and [CellViT](./CellViT) (`run_cellvitFolds.py`) folders.
 
 
 
