@@ -176,8 +176,8 @@ NucEval(ground_truth, prediction,  # both with size of (H,W)
 from nuceval import NucEval
 import tifffile
 
-gt = tifffile.imread("ground_truth.tif")
-pred = tifffile.imread("prediction.tif")
+gt = tifffile.imread("ground_truth.tif") #example with .tif format
+pred = tifffile.imread("prediction.tif") #example with .tif format
 
 # All features enabled
 result = NucEval(gt, pred,
@@ -192,7 +192,9 @@ print(f"Nuclei: {result['num_nuclei']}")
 ```
 
 ### Dataset evaluation with CSV output
+
 Run `evaluate_dataset.py`
+
 ---
 ## Metrics
 The core implementation is adapted from [1].
@@ -208,7 +210,7 @@ The core implementation is adapted from [1].
 
 ## Models
 We evaluated NucEval using predictions obtained from three trained models: Hover-Net [2], Hover-Next [3], and CellViT [4].  
-The implementations are available in the original publications. The 5-fold cross-validation used in this study for each model is also available in the [hover-net](./hover-net), [hover-next](./hover-next), and [CellViT](./CellViT) folders.
+The implementations are available in the original publications. The 5-fold cross-validation used in this study for each model is also available in the [hover-net](./hover_net), [hover-next](./hover_next), and [CellViT](./CellViT) folders.
 
 
 
