@@ -19,7 +19,7 @@ from nuceval import NucEval
 # -------------------------------------------------
 # Paths (update these to match your setup)
 # -------------------------------------------------
-pred_dir = r"C:\Users\amahbod\projects\fulbright\results\NuInsSeg_sub\hovenext\sub_NuInsSeg_data_hovernext_preds_28.00"
+pred_dir = r"C:\Users\amahbod\projects\fulbright\results\NuInsSeg_entire\hovernext\preds_hovernext_54.17\nuinsseg\hovernext\all"
 
 # GT paths — the script checks both locations per sample:
 #   1) ROI directory: gt_roi_dir / {base}_roiset / *.roi   (preferred)

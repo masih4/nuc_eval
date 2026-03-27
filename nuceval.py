@@ -129,6 +129,8 @@ def NucEval(ground_truth, prediction, amb=None, normalized=False,
     # 4. Apply boundary uncertainty ring
     # -------------------------------------------------
     if ring_width > 0:
+        # pred_masks = _label_map_to_masks(pred) # create ring from predictions (not recommended)
+        # ring_mask = _build_ring_mask(pred_masks, ring_width=ring_width)
         ring_mask = _build_ring_mask(gt_masks, ring_width=ring_width)
         if ring_mask is not None:
             gt_masks, pred = _apply_ring_mask(gt_masks, pred, ring_mask)
@@ -235,6 +237,7 @@ def _apply_ring_mask(gt_masks, pred, ring_mask):
     """Zero out ring pixels from both GT masks and pred."""
     ring_bool = ring_mask > 0
 
+    # Zero out ring pixels in GT
     gt_out = []
     for m in gt_masks:
         m_clean = m.copy()
@@ -242,6 +245,7 @@ def _apply_ring_mask(gt_masks, pred, ring_mask):
         if m_clean.sum() > 0:
             gt_out.append(m_clean)
 
+    # Zero out ring pixels in prediction
     pred_out = np.copy(pred)
     pred_out[ring_bool] = 0
     pred_out = _remap_label(pred_out)
