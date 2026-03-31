@@ -19,13 +19,13 @@ from nuceval import NucEval
 # -------------------------------------------------
 # Paths (update these to match your setup)
 # -------------------------------------------------
-pred_dir = r"C:\Users\amahbod\projects\fulbright\results\NuInsSeg_entire\hovernext\preds_hovernext_54.17\nuinsseg\hovernext\all"
+pred_dir = r"C:\Users\amahbod\projects\fulbright\results\CryoNuSeg\hovernet\results\all"
 
 # GT paths — the script checks both locations per sample:
 #   1) ROI directory: gt_roi_dir / {base}_roiset / *.roi   (preferred)
 #   2) Label map:     gt_label_dir / {base}.tif             (fallback)
-gt_roi_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\Imagj_zipslll"
-gt_label_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\label masks modify"
+gt_roi_dir = r"C:\Users\amahbod\projects\fulbright\datasets\CryoNuSeg\Annotator 1 (biologist second round of manual marks up)\Imagj_zips"
+gt_label_dir = r"C:\Users\amahbod\projects\fulbright\datasets\CryoNuSeg\Annotator 1 (biologist second round of manual marks up)\label masks modify"
 
 amb_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\mask binary_vaguelll"
 output_csv = r"C:\Users\amahbod\projects\fulbright\results\metrics_results.csv"
@@ -68,6 +68,7 @@ for name in tqdm(pred_files, desc="Evaluating"):
     # --- Auto-detect GT format ---
     roi_path = os.path.join(gt_roi_dir, base + "_roiset")
     gt_label_path = os.path.join(gt_label_dir, base + ".tif")
+    gt_npy_path = os.path.join(gt_label_dir, base + ".npy")
 
     gt = None
     gt_format = None
@@ -80,6 +81,9 @@ for name in tqdm(pred_files, desc="Evaluating"):
         if gt.shape != shape:
             print(f"Shape mismatch for {name}: pred {shape}, gt {gt.shape}")
             continue
+        gt_format = "label_map"
+    elif os.path.exists(gt_npy_path):
+        gt = np.load(gt_npy_path).astype(np.int32)
         gt_format = "label_map"
     else:
         print(f"GT not found for: {base}")

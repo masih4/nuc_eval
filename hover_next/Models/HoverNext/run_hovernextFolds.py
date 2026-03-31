@@ -31,7 +31,7 @@ parser.add_argument('--model', type=str, default="hovernext",
 parser.add_argument('--batch_size', type=int, default=5, help='batch_size per gpu')
 parser.add_argument('--img_size', type=int, default=512, help='img size of per batch')
 parser.add_argument('--num_classes', type=int, default=1, help='seg num_classes')
-parser.add_argument('--seed', type=int, default=42, help='random seed')
+parser.add_argument('--seed', type=int, default=19, help='random seed')
 parser.add_argument('--variant', type=str, default='1', help='fusion variant')
 parser.add_argument('--iter', type=int, default=2, help='iteration')
 parser.add_argument('--dataset_path', type=str, default='1', help='path to train dataset')
@@ -135,16 +135,16 @@ if __name__ == "__main__":
         # 'monuseg',
         # 'cpm17',
         # 'tnbc',
-        # 'cryonuseg',
-        'nuinsseg',
+        'cryonuseg',
+        #'nuinsseg',
         # 'consep',
         # 'puma',
         # 'monusac',
         # 'dsb'
     ]
-    data_path = "/home/ntorbati/STORAGE/NucleiAnalysis/tif/custom_split/NuInsSeg/train/"
-    logs_dir = '/home/ntorbati/PycharmProjects/NucleiAnalysis/Models/CellVit/CellViT/logs_paper/logs/'
-    weight_path = '/home/ntorbati/PycharmProjects/NucleiAnalysis/checkpoints/'
+    data_path = r"C:\Users\amahbod\projects\fulbright\datasets\CryoNuSeg\Annotator 1 (biologist second round of manual marks up)\merged"
+    logs_dir = r'C:\Users\amahbod\projects\fulbright\results\temp'
+    weight_path = r'C:\Users\amahbod\projects\fulbright\results\temp'
     args.modelSavePath = weight_path
     dataset_name = dataset_tags[0]
     datasets_names = os.listdir(data_path)

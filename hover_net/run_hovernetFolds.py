@@ -22,8 +22,8 @@ CONFIG = {
     # -----------------------------
     # DATASET
     # -----------------------------
-    "images_dir": r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\tissue images",
-    "masks_dir": r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\label masks modify",
+    "images_dir": r"C:\Users\amahbod\projects\fulbright\datasets\CryoNuSeg\tissue images",
+    "masks_dir": r"C:\Users\amahbod\projects\fulbright\datasets\CryoNuSeg\Annotator 1 (biologist second round of manual marks up)\label masks modify",
     "num_folds": 5,
     "seed": 19,
     # -----------------------------
@@ -34,7 +34,7 @@ CONFIG = {
     # -----------------------------
     # TRAINING
     # -----------------------------
-    "epochs": 100
+    "epochs": 10
     # "learning_rate": 1e-4,
     # "optimizer": "adam",
     # -----------------------------
@@ -122,17 +122,22 @@ def read_image(path):
 #######################################################################################################################
 def read_instance_mask(path):
     """
-    Load instance segmentation mask from TIFF
+    Load instance segmentation mask from TIFF or NPY
     """
-    mask = cv2.imread(path, cv2.IMREAD_UNCHANGED)
-    if mask is None:
-        raise RuntimeError(f"Could not read mask: {path}")
+    ext = Path(path).suffix.lower()
+    if ext == ".npy":
+        mask = np.load(path)
+        if mask is None:
+            raise RuntimeError(f"Could not read mask: {path}")
+    else:
+        mask = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+        if mask is None:
+            raise RuntimeError(f"Could not read mask: {path}")
     # Sometimes TIFF loads as 3 channels
     if mask.ndim == 3:
         mask = mask[:, :, 0]
     mask = mask.astype(np.int32)
     return mask
-
 #######################################################################################################################
 def generate_np_map(inst_map):
     np_map = (inst_map > 0).astype(np.float32)
@@ -742,48 +747,48 @@ def run_training(folds, device, epochs=3, batch_size_num=4):
 
         os.makedirs("checkpoints", exist_ok=True)
 
-        # for epoch in range(epochs):
-        #
-        #     print("\nEpoch", epoch + 1)
-        #
-        #     train_loss = train_one_epoch(
-        #         model,
-        #         train_loader,
-        #         optimizer,
-        #         criterion,
-        #         device
-        #     )
-        #
-        #     print("Train loss:", train_loss)
-        #
-        #     # -------- validation loss --------
-        #     val_loss = compute_validation_loss(
-        #         model,
-        #         val_loader,
-        #         criterion,
-        #         device
-        #     )
-        #
-        #     print("Validation loss:", val_loss)
-        #
-        #     # -------- save best model --------
-        #     if val_loss < best_val_loss:
-        #
-        #         best_val_loss = val_loss
-        #
-        #         save_path = f"checkpoints/best_model_fold_{fold+1}.pth"
-        #
-        #         torch.save({
-        #             "epoch": epoch + 1,
-        #             "model_state_dict": model.state_dict(),
-        #             "optimizer_state_dict": optimizer.state_dict(),
-        #             "val_loss": val_loss
-        #         }, save_path)
-        #
-        #         print("Saved new best model:", save_path)
+        for epoch in range(epochs):
+
+            print("\nEpoch", epoch + 1)
+
+            train_loss = train_one_epoch(
+                model,
+                train_loader,
+                optimizer,
+                criterion,
+                device
+            )
+
+            print("Train loss:", train_loss)
+
+            # -------- validation loss --------
+            val_loss = compute_validation_loss(
+                model,
+                val_loader,
+                criterion,
+                device
+            )
+
+            print("Validation loss:", val_loss)
+
+            # -------- save best model --------
+            if val_loss < best_val_loss:
+
+                best_val_loss = val_loss
+
+                save_path = f"checkpoints/best_model_fold_{fold+1}.pth"
+
+                torch.save({
+                    "epoch": epoch + 1,
+                    "model_state_dict": model.state_dict(),
+                    "optimizer_state_dict": optimizer.state_dict(),
+                    "val_loss": val_loss
+                }, save_path)
+
+                print("Saved new best model:", save_path)
 
         # load best model before final evaluation
-        checkpoint = torch.load(f"C://Users//amahbod//projects//fulbright//results//results_hoevenet_correct post process_53.40//checkpoints_hovernet//best_model_fold_{fold + 1}.pth")
+        checkpoint = torch.load(f"checkpoints/best_model_fold_{fold+1}.pth")
 
         model.load_state_dict(checkpoint["model_state_dict"])
 

@@ -280,142 +280,146 @@
 # plt.show()
 
 #######################################################################################################################
-# # # plot PQ, AJI vs. number of instances usin baseline hovernext model
-# import os
-# import numpy as np
-# import pandas as pd
-# import cv2
-# import matplotlib.pyplot as plt
-# from tqdm import tqdm
-#
-# # =========================
-# # PATHS
-# # =========================
-# mask_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\label masks modify"
-# csv_path = r"C:\Users\amahbod\projects\fulbright\results\results_hovernext_54.17\metrics_results_54.17.csv"  # update if needed
-#
-# # =========================
-# # LOAD CSV
-# # =========================
-# df = pd.read_csv(csv_path)
-#
-# # assume column "name" contains file names
-# # adjust if needed
-# names = df["image"].tolist()
-#
-#
-# min_instances = float("inf")
-# max_instances = 0
-#
-# min_sample = None
-# max_sample = None
-#
-#
-# # =========================
-# # FUNCTION: count nuclei
-# # =========================
-# def count_instances(mask):
-#     # assuming instance masks: 0=background, 1,2,... = nuclei
-#     unique_ids = np.unique(mask)
-#     unique_ids = unique_ids[unique_ids != 0]  # remove background
-#     return len(unique_ids)
-#
-#
-# # =========================
-# # COMPUTE INSTANCE COUNTS
-# # =========================
-# num_nuclei_list = []
-#
-# for name in tqdm(names):
-#     # handle different extensions if needed
-#     base = os.path.splitext(name)[0]
-#
-#     # try possible formats
-#     possible_paths = [
-#         os.path.join(mask_dir, base + ".tif"),
-#         os.path.join(mask_dir, base + ".tiff"),
-#         os.path.join(mask_dir, base + ".png"),
-#         os.path.join(mask_dir, base + ".npy"),
-#     ]
-#
-#     mask_path = None
-#     for p in possible_paths:
-#         if os.path.exists(p):
-#             mask_path = p
-#             break
-#
-#     if mask_path is None:
-#         print(f"Mask not found for {name}")
-#         num_nuclei_list.append(np.nan)
-#         continue
-#
-#     # load mask
-#     if mask_path.endswith(".npy"):
-#         mask = np.load(mask_path)
-#     else:
-#         mask = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)
-#
-#     # count nuclei
-#     n_inst = count_instances(mask)
-#     num_nuclei_list.append(n_inst)
-#
-#
-#     # track min and max
-#     if n_inst < min_instances:
-#         min_instances = n_inst
-#         min_sample = name
-#
-#     if n_inst > max_instances:
-#         max_instances = n_inst
-#         max_sample = name
-#
-# # add to dataframe
-# df["num_nuclei"] = num_nuclei_list
-#
-# # remove missing
-# df = df.dropna(subset=["num_nuclei"])
-#
-#
-#
-# # =========================
-# # OUTPUT PATH
-# # =========================
-# save_path = r"C:\Users\amahbod\projects\fulbright\results\pq_aji_vs_nuclei.png"
-#
-# # =========================
-# # PLOT
-# # =========================
-# plt.figure(figsize=(8, 6))
-#
-# plt.scatter(df["num_nuclei"], df["pq"], color="red", alpha=0.6, label="PQ")
-# plt.scatter(df["num_nuclei"], df["aji"], color="blue", alpha=0.6, label="AJI")
-#
-# plt.xlabel("Number of Nuclei per Image", fontsize=19)
-# plt.ylabel("Score (%)", fontsize=19)
-# plt.title("PQ and AJI vs Number of Nuclei", fontsize=19)
-#
-# plt.legend(fontsize=12)
-# plt.grid(True)
-#
-# # =========================
-# # SAVE FIGURE (HIGH QUALITY)
-# # =========================
-# plt.savefig(save_path, dpi=300, bbox_inches="tight")
-#
-# print(f"Figure saved at: {save_path}")
-#
-# plt.show()
-#
-# # =========================
-# # SAVE CSV WITH NUM_NUCLEI
-# # =========================
-# csv_save_path = r"C:\Users\amahbod\projects\fulbright\results\metrics_with_nuclei_count.csv"
-# df.to_csv(csv_save_path, index=False)
-# print(f"CSV saved at: {csv_save_path}")
-#
-# print(f"Minimum number of nuclei: {min_instances} (sample: {min_sample})")
-# print(f"Maximum number of nuclei: {max_instances} (sample: {max_sample})")
-#
+# # plot PQ, AJI vs. number of instances usin baseline hovernext model
+import os
+import numpy as np
+import pandas as pd
+import cv2
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+
+# =========================
+# PATHS
+# =========================
+mask_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\label masks modify"
+#csv_path = r"C:\Users\amahbod\projects\fulbright\results\NuInsSeg_entire\hovernext\preds_hovernext_54.17\metrics_results_54.17.csv"  # update if needed
+csv_path = r"C:\Users\amahbod\projects\fulbright\results\NuInsSeg_sub\hovenext\sub_NuInsSeg_data_hovernext_preds_28.00\metrics_results_hovernext_based_28.00.csv"
+
+
+# =========================
+# LOAD CSV
+# =========================
+df = pd.read_csv(csv_path)
+
+# assume column "name" contains file names
+# adjust if needed
+names = df["image"].tolist()
+
+
+min_instances = float("inf")
+max_instances = 0
+
+min_sample = None
+max_sample = None
+
+
+# =========================
+# FUNCTION: count nuclei
+# =========================
+def count_instances(mask):
+    # assuming instance masks: 0=background, 1,2,... = nuclei
+    unique_ids = np.unique(mask)
+    unique_ids = unique_ids[unique_ids != 0]  # remove background
+    return len(unique_ids)
+
+
+# =========================
+# COMPUTE INSTANCE COUNTS
+# =========================
+num_nuclei_list = []
+
+for name in tqdm(names):
+    # handle different extensions if needed
+    base = os.path.splitext(name)[0]
+
+    # try possible formats
+    possible_paths = [
+        os.path.join(mask_dir, base + ".tif"),
+        os.path.join(mask_dir, base + ".tiff"),
+        os.path.join(mask_dir, base + ".png"),
+        os.path.join(mask_dir, base + ".npy"),
+    ]
+
+    mask_path = None
+    for p in possible_paths:
+        if os.path.exists(p):
+            mask_path = p
+            break
+
+    if mask_path is None:
+        print(f"Mask not found for {name}")
+        num_nuclei_list.append(np.nan)
+        continue
+
+    # load mask
+    if mask_path.endswith(".npy"):
+        mask = np.load(mask_path)
+    else:
+        mask = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)
+
+    # count nuclei
+    n_inst = count_instances(mask)
+    num_nuclei_list.append(n_inst)
+
+
+    # track min and max
+    if n_inst < min_instances:
+        min_instances = n_inst
+        min_sample = name
+
+    if n_inst > max_instances:
+        max_instances = n_inst
+        max_sample = name
+
+# add to dataframe
+df["num_nuclei"] = num_nuclei_list
+
+# remove missing
+df = df.dropna(subset=["num_nuclei"])
+
+
+
+# =========================
+# OUTPUT PATH
+# =========================
+save_path = r"C:\Users\amahbod\projects\fulbright\results\pq_aji_vs_nuclei.png"
+
+# =========================
+# PLOT
+# =========================
+plt.figure(figsize=(8, 6))
+
+plt.scatter(df["num_nuclei"], df["pq"]*100, color="blue", alpha=0.6, label="PQ")
+#plt.scatter(df["num_nuclei"], df["aji"]*100 color="red", alpha=0.6, label="AJI")
+
+plt.xlabel("Number of Nuclei per Image", fontsize=19)
+plt.ylabel("PQ (%)", fontsize=19)
+#plt.title("PQ and AJI vs Number of Nuclei", fontsize=19)
+#plt.title("PQ vs Number of Nuclei", fontsize=19)
+
+
+#plt.legend(fontsize=12)
+plt.grid(True)
+
+# =========================
+# SAVE FIGURE (HIGH QUALITY)
+# =========================
+plt.savefig(save_path, dpi=300, bbox_inches="tight")
+
+print(f"Figure saved at: {save_path}")
+
+plt.show()
+
+# =========================
+# SAVE CSV WITH NUM_NUCLEI
+# =========================
+csv_save_path = r"C:\Users\amahbod\projects\fulbright\results\metrics_with_nuclei_count.csv"
+df.to_csv(csv_save_path, index=False)
+print(f"CSV saved at: {csv_save_path}")
+
+print(f"Minimum number of nuclei: {min_instances} (sample: {min_sample})")
+print(f"Maximum number of nuclei: {max_instances} (sample: {max_sample})")
+
 
 ######################################################################################################################
 # # solve the problem of names in the original nuissseg ImageJZip files
@@ -781,120 +785,234 @@
 # plt.show()
 
 #######################################################################################################################
-# visualization of ring effect
-import os
-import numpy as np
-import tifffile
-import cv2
-import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
-from tqdm import tqdm
+# # visualization of ring effect
+# import os
+# import numpy as np
+# import tifffile
+# import cv2
+# import matplotlib.pyplot as plt
+# from matplotlib.colors import ListedColormap
+# from tqdm import tqdm
+#
+#
+# # -------------------------------------------------
+# # Paths
+# # -------------------------------------------------
+# gt_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\label masks modify"
+# tissue_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\tissue images"
+# output_dir = r"C:\Users\amahbod\projects\fulbright\results\ring_figures"
+#
+# ring_widths = [0, 1, 2, 4, 6]
+#
+# # -------------------------------------------------
+# # Create output directory
+# # -------------------------------------------------
+# os.makedirs(output_dir, exist_ok=True)
+#
+# # -------------------------------------------------
+# # Process all label masks
+# # -------------------------------------------------
+# gt_files = sorted([f for f in os.listdir(gt_dir) if f.endswith(".tif")])
+#
+# for gt_name in tqdm(gt_files, desc="Generating ring figures"):
+#     gt_path = os.path.join(gt_dir, gt_name)
+#     base = os.path.splitext(gt_name)[0]
+#
+#     gt = tifffile.imread(gt_path).astype(np.int32)
+#     shape = gt.shape
+#
+#     # Load tissue image
+#     tissue_path = os.path.join(tissue_dir, base + ".png")
+#     if os.path.exists(tissue_path):
+#         tissue_img = cv2.imread(tissue_path)
+#         tissue_img = cv2.cvtColor(tissue_img, cv2.COLOR_BGR2RGB)
+#     else:
+#         tissue_img = None
+#
+#     # Remap labels to contiguous
+#     inst_ids = [i for i in np.unique(gt) if i != 0]
+#     label_map = np.zeros(shape, dtype=np.int32)
+#     masks = []
+#     for idx, inst_id in enumerate(inst_ids):
+#         m = (gt == inst_id).astype(np.uint8)
+#         masks.append(m)
+#         label_map[m > 0] = idx + 1
+#
+#     n_instances = len(masks)
+#     if n_instances == 0:
+#         continue
+#
+#     # Extract tissue type from filename (e.g. human_bladder_01 -> Bladder)
+#     parts = base.split('_')
+#     tissue_type = '_'.join(parts[1:-1]).replace('_', ' ').title()
+#
+#     # Colormap
+#     np.random.seed(42)
+#     colors = [(0, 0, 0)]
+#     for _ in range(n_instances + 1):
+#         colors.append(tuple(np.random.uniform(0.2, 1.0, 3)))
+#     cmap = ListedColormap(colors)
+#
+#     n_cols = 1 + len(ring_widths)  # tissue + ring variations
+#     fig, axes = plt.subplots(1, n_cols, figsize=(4 * n_cols, 4))
+#
+#     # First column: tissue image
+#     if tissue_img is not None:
+#         axes[0].imshow(tissue_img)
+#     else:
+#         axes[0].text(0.5, 0.5, 'Tissue image\nnot found', ha='center', va='center',
+#                      transform=axes[0].transAxes, fontsize=10)
+#     axes[0].set_title(f'Tissue ({tissue_type})', fontsize=30)
+#     axes[0].axis('off')
+#
+#     for idx, rw in enumerate(ring_widths):
+#         ax = axes[idx + 1]
+#
+#         if rw == 0:
+#             vis = label_map.copy()
+#         else:
+#             kernel = cv2.getStructuringElement(
+#                 cv2.MORPH_ELLIPSE, (2 * rw + 1, 2 * rw + 1)
+#             )
+#             # Build global ring mask from all instances
+#             ring_mask = np.zeros(shape, dtype=np.uint8)
+#             for m in masks:
+#                 dilated = cv2.dilate(m, kernel, iterations=1)
+#                 eroded = cv2.erode(m, kernel, iterations=1)
+#                 ring = dilated - eroded
+#                 ring_mask = np.maximum(ring_mask, ring)
+#
+#             # Apply ring
+#             ring_bool = ring_mask > 0
+#             vis = np.zeros(shape, dtype=np.int32)
+#             for i, m in enumerate(masks):
+#                 m_clean = m.copy()
+#                 m_clean[ring_bool] = 0
+#                 vis[m_clean > 0] = i + 1
+#
+#         ax.imshow(vis, cmap=cmap, interpolation='nearest', vmin=0, vmax=n_instances)
+#         ax.set_title(f'Ring = {rw}', fontsize=30)
+#         ax.axis('off')
+#
+#     #plt.suptitle(base, fontsize=13, fontweight='bold')
+#     plt.tight_layout()
+#     out_path = os.path.join(output_dir, base + "_ring_comparison.png")
+#     plt.savefig(out_path, dpi=200, bbox_inches='tight')
+#     plt.close()
+#     #print(f"Saved: {out_path}")
+#
+# print(f"\nDone. {len(gt_files)} figures saved to: {output_dir}")
 
 
-# -------------------------------------------------
-# Paths
-# -------------------------------------------------
-gt_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\label masks modify"
-tissue_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\tissue images"
-output_dir = r"C:\Users\amahbod\projects\fulbright\results\ring_figures"
-
-ring_widths = [0, 1, 2, 4, 6]
-
-# -------------------------------------------------
-# Create output directory
-# -------------------------------------------------
-os.makedirs(output_dir, exist_ok=True)
-
-# -------------------------------------------------
-# Process all label masks
-# -------------------------------------------------
-gt_files = sorted([f for f in os.listdir(gt_dir) if f.endswith(".tif")])
-
-for gt_name in tqdm(gt_files, desc="Generating ring figures"):
-    gt_path = os.path.join(gt_dir, gt_name)
-    base = os.path.splitext(gt_name)[0]
-
-    gt = tifffile.imread(gt_path).astype(np.int32)
-    shape = gt.shape
-
-    # Load tissue image
-    tissue_path = os.path.join(tissue_dir, base + ".png")
-    if os.path.exists(tissue_path):
-        tissue_img = cv2.imread(tissue_path)
-        tissue_img = cv2.cvtColor(tissue_img, cv2.COLOR_BGR2RGB)
-    else:
-        tissue_img = None
-
-    # Remap labels to contiguous
-    inst_ids = [i for i in np.unique(gt) if i != 0]
-    label_map = np.zeros(shape, dtype=np.int32)
-    masks = []
-    for idx, inst_id in enumerate(inst_ids):
-        m = (gt == inst_id).astype(np.uint8)
-        masks.append(m)
-        label_map[m > 0] = idx + 1
-
-    n_instances = len(masks)
-    if n_instances == 0:
-        continue
-
-    # Extract tissue type from filename (e.g. human_bladder_01 -> Bladder)
-    parts = base.split('_')
-    tissue_type = '_'.join(parts[1:-1]).replace('_', ' ').title()
-
-    # Colormap
-    np.random.seed(42)
-    colors = [(0, 0, 0)]
-    for _ in range(n_instances + 1):
-        colors.append(tuple(np.random.uniform(0.2, 1.0, 3)))
-    cmap = ListedColormap(colors)
-
-    n_cols = 1 + len(ring_widths)  # tissue + ring variations
-    fig, axes = plt.subplots(1, n_cols, figsize=(4 * n_cols, 4))
-
-    # First column: tissue image
-    if tissue_img is not None:
-        axes[0].imshow(tissue_img)
-    else:
-        axes[0].text(0.5, 0.5, 'Tissue image\nnot found', ha='center', va='center',
-                     transform=axes[0].transAxes, fontsize=10)
-    axes[0].set_title(f'Tissue ({tissue_type})', fontsize=30)
-    axes[0].axis('off')
-
-    for idx, rw in enumerate(ring_widths):
-        ax = axes[idx + 1]
-
-        if rw == 0:
-            vis = label_map.copy()
-        else:
-            kernel = cv2.getStructuringElement(
-                cv2.MORPH_ELLIPSE, (2 * rw + 1, 2 * rw + 1)
-            )
-            # Build global ring mask from all instances
-            ring_mask = np.zeros(shape, dtype=np.uint8)
-            for m in masks:
-                dilated = cv2.dilate(m, kernel, iterations=1)
-                eroded = cv2.erode(m, kernel, iterations=1)
-                ring = dilated - eroded
-                ring_mask = np.maximum(ring_mask, ring)
-
-            # Apply ring
-            ring_bool = ring_mask > 0
-            vis = np.zeros(shape, dtype=np.int32)
-            for i, m in enumerate(masks):
-                m_clean = m.copy()
-                m_clean[ring_bool] = 0
-                vis[m_clean > 0] = i + 1
-
-        ax.imshow(vis, cmap=cmap, interpolation='nearest', vmin=0, vmax=n_instances)
-        ax.set_title(f'Ring = {rw}', fontsize=30)
-        ax.axis('off')
-
-    #plt.suptitle(base, fontsize=13, fontweight='bold')
-    plt.tight_layout()
-    out_path = os.path.join(output_dir, base + "_ring_comparison.png")
-    plt.savefig(out_path, dpi=200, bbox_inches='tight')
-    plt.close()
-    #print(f"Saved: {out_path}")
-
-print(f"\nDone. {len(gt_files)} figures saved to: {output_dir}")
+#######################################################################################################################
+# # figure in the paper (tissue, labeled mask, label mask moify, vague areas))
+# import os
+# import numpy as np
+# import tifffile
+# import cv2
+# import matplotlib.pyplot as plt
+# from matplotlib.colors import ListedColormap
+# from tqdm import tqdm
+#
+#
+# # -------------------------------------------------
+# # Paths
+# # -------------------------------------------------
+# tissue_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\tissue images"
+# gt_overlap_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\label masks"
+# gt_merged_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\label masks modify"
+# vague_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\mask binary_vague"
+# output_dir = r"C:\Users\amahbod\projects\fulbright\results\dataset_figures"
+#
+# os.makedirs(output_dir, exist_ok=True)
+#
+#
+# # -------------------------------------------------
+# # Helper: create a random colormap for label maps
+# # -------------------------------------------------
+# def make_label_colormap(n_labels, seed=42):
+#     np.random.seed(seed)
+#     colors = [(0, 0, 0)]  # background = black
+#     for _ in range(n_labels):
+#         colors.append(tuple(np.random.uniform(0.2, 1.0, 3)))
+#     return ListedColormap(colors)
+#
+#
+# # -------------------------------------------------
+# # Loop through all tissue images
+# # -------------------------------------------------
+# tissue_files = sorted([f for f in os.listdir(tissue_dir) if f.endswith(".png")])
+#
+# for tissue_name in tqdm(tissue_files, desc="Plotting dataset samples"):
+#     base = os.path.splitext(tissue_name)[0]
+#
+#     # --- Load tissue image ---
+#     tissue_path = os.path.join(tissue_dir, tissue_name)
+#     tissue = cv2.imread(tissue_path)
+#     tissue = cv2.cvtColor(tissue, cv2.COLOR_BGR2RGB)
+#
+#     # --- Load label mask (preserved overlaps) ---
+#     gt_overlap_path = os.path.join(gt_overlap_dir, base + ".tif")
+#     if not os.path.exists(gt_overlap_path):
+#         print(f"Label mask (overlap) not found: {base}.tif")
+#         continue
+#     gt_overlap = tifffile.imread(gt_overlap_path).astype(np.int32)
+#
+#     # --- Load label mask (merged/modified) ---
+#     gt_merged_path = os.path.join(gt_merged_dir, base + ".tif")
+#     if not os.path.exists(gt_merged_path):
+#         print(f"Label mask (merged) not found: {base}.tif")
+#         continue
+#     gt_merged = tifffile.imread(gt_merged_path).astype(np.int32)
+#
+#     # --- Load vague area mask ---
+#     vague_path = os.path.join(vague_dir, base + ".png")
+#     if os.path.exists(vague_path):
+#         vague = cv2.imread(vague_path, cv2.IMREAD_GRAYSCALE)
+#     else:
+#         vague = None
+#
+#     # --- Extract tissue type from filename ---
+#     parts = base.split('_')
+#     tissue_type = '_'.join(parts[1:-1]).replace('_', ' ').title()
+#
+#     # --- Create colormap ---
+#     n_labels = max(len(np.unique(gt_overlap)), len(np.unique(gt_merged)))
+#     cmap = make_label_colormap(n_labels)
+#
+#     # --- Plot ---
+#     n_cols = 4 if vague is not None else 3
+#     fig, axes = plt.subplots(1, n_cols, figsize=(4.5 * n_cols, 4.5))
+#
+#     # Tissue image
+#     axes[0].imshow(tissue)
+#     axes[0].set_title(f'Tissue ({tissue_type})', fontsize=11)
+#     axes[0].axis('off')
+#
+#     # Label mask (preserved overlaps)
+#     n_overlap = len(np.unique(gt_overlap)) - 1
+#     axes[1].imshow(gt_overlap, cmap=cmap, interpolation='nearest')
+#     axes[1].set_title(f'Labels - overlaps preserved (n={n_overlap})', fontsize=11)
+#     axes[1].axis('off')
+#
+#     # Label mask (merged)
+#     n_merged = len(np.unique(gt_merged)) - 1
+#     axes[2].imshow(gt_merged, cmap=cmap, interpolation='nearest')
+#     axes[2].set_title(f'Labels - overlaps merged (n={n_merged})', fontsize=11)
+#     axes[2].axis('off')
+#
+#     # Vague area mask
+#     if vague is not None:
+#         axes[3].imshow(vague, cmap='gray')
+#         axes[3].set_title('Vague areas', fontsize=11)
+#         axes[3].axis('off')
+#
+#     plt.suptitle(base, fontsize=13, fontweight='bold')
+#     plt.tight_layout()
+#
+#     out_path = os.path.join(output_dir, base + ".png")
+#     plt.savefig(out_path, dpi=200, bbox_inches='tight')
+#     plt.close()
+#
+# print(f"\nDone. Figures saved to: {output_dir}")
+#
