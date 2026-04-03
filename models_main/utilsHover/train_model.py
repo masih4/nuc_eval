@@ -20,14 +20,14 @@ from utilsHover.utilsNew import dice_loss_binary
 # from src.utilsHover.kd_loss import MSELoss
 from torch.utils.data import DataLoader
 import copy
-from Models.CellVit.CellViT.cell_segmentation.utils.post_proc_cellvit import DetectionCellPostProcessor
+from Models.CellVit.cell_segmentation.utils.post_proc_cellvit import DetectionCellPostProcessor
 from utilsHover.utils_nuclei import inst_loss_hovernext as criterion_hovernext
 # from Models.CellVit.CellViT.base_ml.base_loss import MSGELossMaps
 import matplotlib.pyplot as plt
 import torchstain
 import numpy as np
-from Models.CellVit.CellViT.cell_segmentation.utils.metrics import get_fast_pq, remap_label
-from Models.CellVit.CellViT.base_ml.base_loss import FocalTverskyLoss
+from Models.CellVit.cell_segmentation.utils.metrics import get_fast_pq, remap_label
+from Models.CellVit.base_ml.base_loss import FocalTverskyLoss
 
 def freeze_enc(model):
     for p in model.encoder.parameters():
@@ -118,7 +118,7 @@ def train_model(
             'train': DataLoader(train_set, shuffle=True,collate_fn=collate_tile_patches, **loader_args),
         }
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)  # Default optimizer setup
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=15,factor=weight_decay,min_lr=0.5*1e-7,cooldown=5)  # goal: maximize Dice score
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=30,factor=weight_decay,min_lr=0.5*1e-7,cooldown=5)  # goal: maximize Dice score
 
     optimizer.zero_grad()
     criterion_binary = nn.BCEWithLogitsLoss()

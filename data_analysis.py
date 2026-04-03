@@ -291,9 +291,9 @@ from tqdm import tqdm
 # =========================
 # PATHS
 # =========================
-mask_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuInsSeg_merged\label masks modify"
+mask_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuFuseRank\custom_split\PCNS\merged_labels"
 #csv_path = r"C:\Users\amahbod\projects\fulbright\results\NuInsSeg_entire\hovernext\preds_hovernext_54.17\metrics_results_54.17.csv"  # update if needed
-csv_path = r"C:\Users\amahbod\projects\fulbright\results\NuInsSeg_sub\hovenext\sub_NuInsSeg_data_hovernext_preds_28.00\metrics_results_hovernext_based_28.00.csv"
+csv_path = r"C:\Users\amahbod\projects\fulbright\results\PCNS\hovernext\metrics_results_PCNS_hovernext_baseline_56.74.csv"
 
 
 # =========================
@@ -1016,3 +1016,144 @@ print(f"Maximum number of nuclei: {max_instances} (sample: {max_sample})")
 #
 # print(f"\nDone. Figures saved to: {output_dir}")
 #
+
+
+
+#######################################################################################################################
+# # to undertand wht was the reson for differt perfronce in Cryonuseg (annotaions were dieffernt for differnt models, annotator 1 vs annotator 2)
+#
+# import os
+# import numpy as np
+# import tifffile
+# import cv2
+# import matplotlib.pyplot as plt
+# from matplotlib.colors import ListedColormap
+# from tqdm import tqdm
+#
+#
+# # -------------------------------------------------
+# # Paths
+# # -------------------------------------------------
+# tissue_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuFuseRank\custom_split\CryoNuSeg\org_format\tissue images"
+# gt_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuFuseRank\custom_split\CryoNuSeg\org_format\Annotator 1 (biologist second round of manual marks up)\label masks"
+# hovernet_dir = r"C:\Users\amahbod\projects\fulbright\results\CryoNuSeg\hovernet\results\all"
+# cellvit_dir = r"C:\Users\amahbod\projects\fulbright\results\CryoNuSeg\cellvit\baseline"
+# output_dir = r"C:\Users\amahbod\projects\fulbright\results\CryoNuSeg\comparison_figures"
+#
+# os.makedirs(output_dir, exist_ok=True)
+#
+#
+# # -------------------------------------------------
+# # Helper: colorize instance mask
+# # -------------------------------------------------
+# def colorize_instances(inst_map, seed=42):
+#     h, w = inst_map.shape
+#     colored = np.zeros((h, w, 3), dtype=np.uint8)
+#     inst_ids = np.unique(inst_map)
+#     inst_ids = inst_ids[inst_ids > 0]
+#     rng = np.random.default_rng(seed)
+#     for inst_id in inst_ids:
+#         mask = inst_map == inst_id
+#         color = rng.integers(50, 255, size=3)
+#         colored[mask] = color
+#     return colored
+#
+#
+# # -------------------------------------------------
+# # Collect tissue files
+# # -------------------------------------------------
+# tissue_files = sorted([f for f in os.listdir(tissue_dir) if f.endswith(".tif") or f.endswith(".png")])
+#
+# for tissue_name in tqdm(tissue_files, desc="Generating comparison figures"):
+#     base = os.path.splitext(tissue_name)[0]
+#
+#     # --- Load tissue image ---
+#     tissue_path = os.path.join(tissue_dir, tissue_name)
+#     tissue = cv2.imread(tissue_path)
+#     if tissue is None:
+#         tissue = tifffile.imread(tissue_path)
+#     else:
+#         tissue = cv2.cvtColor(tissue, cv2.COLOR_BGR2RGB)
+#
+#     # --- Load GT ---
+#     gt_path = os.path.join(gt_dir, base + ".tif")
+#     if not os.path.exists(gt_path):
+#         print(f"GT not found: {base}")
+#         continue
+#     gt = tifffile.imread(gt_path).astype(np.int32)
+#     n_gt = len(np.unique(gt)) - 1
+#
+#     # --- Load HoverNet prediction ---
+#     hovernet_path = os.path.join(hovernet_dir, base + ".tiff")
+#     if not os.path.exists(hovernet_path):
+#         hovernet_path = os.path.join(hovernet_dir, base + ".tif")
+#     if os.path.exists(hovernet_path):
+#         hovernet = tifffile.imread(hovernet_path).astype(np.int32)
+#         n_hovernet = len(np.unique(hovernet)) - 1
+#         has_hovernet = True
+#     else:
+#         has_hovernet = False
+#
+#     # --- Load CellViT prediction ---
+#     cellvit_path = os.path.join(cellvit_dir, base + ".npy")
+#     if os.path.exists(cellvit_path):
+#         cellvit = np.load(cellvit_path).astype(np.int32)
+#         n_cellvit = len(np.unique(cellvit)) - 1
+#         has_cellvit = True
+#     else:
+#         has_cellvit = False
+#
+#     if not has_hovernet and not has_cellvit:
+#         print(f"No predictions found for: {base}")
+#         continue
+#
+#     # --- Colorize masks ---
+#     gt_color = colorize_instances(gt, seed=42)
+#     hovernet_color = colorize_instances(hovernet, seed=42) if has_hovernet else None
+#     cellvit_color = colorize_instances(cellvit, seed=42) if has_cellvit else None
+#
+#     # --- Extract tissue type from filename ---
+#     parts = base.split('_')
+#     tissue_type = '_'.join(parts[1:-1]).replace('_', ' ').title() if len(parts) > 2 else base
+#
+#     # --- Plot ---
+#     fig, axes = plt.subplots(1, 4, figsize=(20, 5))
+#
+#     # Tissue
+#     axes[0].imshow(tissue)
+#     axes[0].set_title(f'Tissue ({tissue_type})', fontsize=11)
+#     axes[0].axis('off')
+#
+#     # GT
+#     axes[1].imshow(gt_color)
+#     axes[1].set_title(f'Ground Truth (n={n_gt})', fontsize=11)
+#     axes[1].axis('off')
+#
+#     # HoverNet
+#     if has_hovernet:
+#         axes[2].imshow(hovernet_color)
+#         axes[2].set_title(f'Hover-Net (n={n_hovernet})', fontsize=11)
+#     else:
+#         axes[2].text(0.5, 0.5, 'Not available', ha='center', va='center',
+#                      transform=axes[2].transAxes, fontsize=12)
+#         axes[2].set_title('Hover-Net', fontsize=11)
+#     axes[2].axis('off')
+#
+#     # CellViT
+#     if has_cellvit:
+#         axes[3].imshow(cellvit_color)
+#         axes[3].set_title(f'CellViT (n={n_cellvit})', fontsize=11)
+#     else:
+#         axes[3].text(0.5, 0.5, 'Not available', ha='center', va='center',
+#                      transform=axes[3].transAxes, fontsize=12)
+#         axes[3].set_title('CellViT', fontsize=11)
+#     axes[3].axis('off')
+#
+#     plt.suptitle(base, fontsize=13, fontweight='bold')
+#     plt.tight_layout()
+#
+#     out_path = os.path.join(output_dir, base + ".png")
+#     plt.savefig(out_path, dpi=200, bbox_inches='tight')
+#     plt.close()
+#
+# print(f"\nDone. Figures saved to: {output_dir}")

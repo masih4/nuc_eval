@@ -22,8 +22,8 @@ CONFIG = {
     # -----------------------------
     # DATASET
     # -----------------------------
-    "images_dir": r"..\..\..\..\datasets\NuFuseRank\custom_split\CryoNuSeg\org_format\tissue images",
-    "masks_dir": r"..\..\..\..\datasets\NuFuseRank\custom_split\CryoNuSeg\org_format\Annotator 1 (biologist second round of manual marks up)\label masks modify",
+    "images_dir": r"..\..\..\..\datasets\NuFuseRank\custom_split\CryoNuSeg\merged\tissues",
+    "masks_dir": r"..\..\..\..\datasets\NuFuseRank\custom_split\CryoNuSeg\merged\masks",
     "num_folds": 5,
     "seed": 19,
     # -----------------------------
@@ -34,7 +34,7 @@ CONFIG = {
     # -----------------------------
     # TRAINING
     # -----------------------------
-    "epochs": 2
+    "epochs": 150
     # "learning_rate": 1e-4,
     # "optimizer": "adam",
     # -----------------------------
@@ -739,7 +739,15 @@ def run_training(folds, device, epochs=3, batch_size_num=4):
 
         model = HoverNet().to(device)
 
-        optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+        optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+
+        optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+
+        weight_decay = 0.7
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, 'min', patience=30, factor=weight_decay,
+            min_lr=0.5e-7, cooldown=5
+        )
 
         criterion = HoverNetLoss()
 
@@ -770,6 +778,11 @@ def run_training(folds, device, epochs=3, batch_size_num=4):
             )
 
             print("Validation loss:", val_loss)
+
+
+            # step the LR scheduler
+            scheduler.step(val_loss)
+            print("Current LR:", optimizer.param_groups[0]['lr'])
 
             # -------- save best model --------
             if val_loss < best_val_loss:

@@ -30,11 +30,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--model', type=str, default="hovernext",
                     choices=["hovernext"], help='model')
 parser.add_argument('--batch_size', type=int, default=4, help='batch_size per gpu')
-parser.add_argument('--img_size', type=int, default=512, help='img size of per batch')
+parser.add_argument('--img_size', type=int, default=256, help='img size of per batch')
 parser.add_argument('--num_classes', type=int, default=1, help='seg num_classes')
 parser.add_argument('--seed', type=int, default=19, help='random seed')
 parser.add_argument('--variant', type=str, default='1', help='fusion variant')
-parser.add_argument('--iter', type=int, default=15, help='iteration')
+parser.add_argument('--iter', type=int, default=150, help='iteration')
 parser.add_argument('--dataset_path', type=str, default='1', help='path to train dataset')
 parser.add_argument('--validation_path', type=str, default='1', help='path to val dataset')
 parser.add_argument('--modelSavePath', type=str, default='1', help='path to save best model')
@@ -96,7 +96,7 @@ def main(args):
 
         print(f'{args.model} training fold : {folds} ......................................................')
         iters = args.iter
-        lr = 1e-4
+        lr = 1e-3
         model1 = get_model(args)
         model1.to(device2)
         model1.n_classes = n_class
@@ -117,7 +117,7 @@ def main(args):
         val_masks = val_masks,
         augmentation=True,# default None
         val_batch=1,
-        early_stopping=100,
+        early_stopping=200,
         ful_size=final_target_size,
         dir_checkpoint=dir_checkpoint,
         model_name=model_name,
@@ -132,18 +132,18 @@ def main(args):
 if __name__ == "__main__":
     args.model = "hovernext"
     dataset_tags = [
-        # 'pcns',
+        'pcns',
         # 'monuseg',
         # 'cpm17',
         # 'tnbc',
-        'cryonuseg',
+        #'cryonuseg',
         #'nuinsseg',
         # 'consep',
         # 'puma',
         # 'monusac',
         # 'dsb'
     ]
-    data_path = r"..\..\..\..\datasets\NuFuseRank\custom_split\CryoNuSeg\merged"
+    data_path = r"..\..\..\..\datasets\NuFuseRank\custom_split\PCNS\merged"
     logs_dir = r'.\results'
     weight_path = r'.\results'
     args.modelSavePath = weight_path

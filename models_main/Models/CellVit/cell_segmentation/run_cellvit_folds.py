@@ -171,12 +171,12 @@ if __name__ == "__main__":
         configuration = configuration_parser.parse_arguments()
         configuration['model']['pretrained_encoder'] = r'C:\Users\amahbod\projects\fulbright\pretrained_weights\vit256_small_dino.pth'
 
-        data_path = r'C:\Users\amahbod\projects\fulbright\datasets\NuFuseRank\custom_split\CryoNuSeg\merged'
+        data_path = r'C:\Users\amahbod\projects\fulbright\datasets\NuFuseRank\custom_split\PCNS\merged'
         logs_dir = r'C:\Users\amahbod\projects\fulbright\code\models_main\Models\CellVit\cell_segmentation\results'
         configuration['random_seed'] = 19
         seed_torch(configuration['random_seed'])
-        configuration['data']['input_shape'] = 512
-        configuration['training']['epochs'] = 2
+        configuration['data']['input_shape'] = 256
+        configuration['training']['epochs'] = 150
 
         train_val_split(data_path=data_path, random_state=configuration['random_seed'], fold=fold, conf_pth=conf_pth)
 
