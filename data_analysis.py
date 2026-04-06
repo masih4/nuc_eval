@@ -280,145 +280,145 @@
 # plt.show()
 
 #######################################################################################################################
-# # plot PQ, AJI vs. number of instances usin baseline hovernext model
-import os
-import numpy as np
-import pandas as pd
-import cv2
-import matplotlib.pyplot as plt
-from tqdm import tqdm
+# # # plot PQ, AJI vs. number of instances usin baseline hovernext model
+# import os
+# import numpy as np
+# import pandas as pd
+# import cv2
+# import matplotlib.pyplot as plt
+# from tqdm import tqdm
+#
+# # =========================
+# # PATHS
+# # =========================
+# mask_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuFuseRank\custom_split\PCNS\merged_labels"
+# #csv_path = r"C:\Users\amahbod\projects\fulbright\results\NuInsSeg_entire\hovernext\preds_hovernext_54.17\metrics_results_54.17.csv"  # update if needed
+# csv_path = r"C:\Users\amahbod\projects\fulbright\results\PCNS\hovernext\metrics_results_PCNS_hovernext_baseline_56.74.csv"
+#
+#
+# # =========================
+# # LOAD CSV
+# # =========================
+# df = pd.read_csv(csv_path)
+#
+# # assume column "name" contains file names
+# # adjust if needed
+# names = df["image"].tolist()
+#
+#
+# min_instances = float("inf")
+# max_instances = 0
+#
+# min_sample = None
+# max_sample = None
+#
+#
+# # =========================
+# # FUNCTION: count nuclei
+# # =========================
+# def count_instances(mask):
+#     # assuming instance masks: 0=background, 1,2,... = nuclei
+#     unique_ids = np.unique(mask)
+#     unique_ids = unique_ids[unique_ids != 0]  # remove background
+#     return len(unique_ids)
+#
+#
+# # =========================
+# # COMPUTE INSTANCE COUNTS
+# # =========================
+# num_nuclei_list = []
+#
+# for name in tqdm(names):
+#     # handle different extensions if needed
+#     base = os.path.splitext(name)[0]
+#
+#     # try possible formats
+#     possible_paths = [
+#         os.path.join(mask_dir, base + ".tif"),
+#         os.path.join(mask_dir, base + ".tiff"),
+#         os.path.join(mask_dir, base + ".png"),
+#         os.path.join(mask_dir, base + ".npy"),
+#     ]
+#
+#     mask_path = None
+#     for p in possible_paths:
+#         if os.path.exists(p):
+#             mask_path = p
+#             break
+#
+#     if mask_path is None:
+#         print(f"Mask not found for {name}")
+#         num_nuclei_list.append(np.nan)
+#         continue
+#
+#     # load mask
+#     if mask_path.endswith(".npy"):
+#         mask = np.load(mask_path)
+#     else:
+#         mask = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)
+#
+#     # count nuclei
+#     n_inst = count_instances(mask)
+#     num_nuclei_list.append(n_inst)
+#
+#
+#     # track min and max
+#     if n_inst < min_instances:
+#         min_instances = n_inst
+#         min_sample = name
+#
+#     if n_inst > max_instances:
+#         max_instances = n_inst
+#         max_sample = name
+#
+# # add to dataframe
+# df["num_nuclei"] = num_nuclei_list
+#
+# # remove missing
+# df = df.dropna(subset=["num_nuclei"])
+#
+#
+#
+# # =========================
+# # OUTPUT PATH
+# # =========================
+# save_path = r"C:\Users\amahbod\projects\fulbright\results\pq_aji_vs_nuclei.png"
+#
+# # =========================
+# # PLOT
+# # =========================
+# plt.figure(figsize=(8, 6))
+#
+# plt.scatter(df["num_nuclei"], df["pq"]*100, color="blue", alpha=0.6, label="PQ")
+# #plt.scatter(df["num_nuclei"], df["aji"]*100 color="red", alpha=0.6, label="AJI")
+#
+# plt.xlabel("Number of Nuclei per Image", fontsize=19)
+# plt.ylabel("PQ (%)", fontsize=19)
+# #plt.title("PQ and AJI vs Number of Nuclei", fontsize=19)
+# #plt.title("PQ vs Number of Nuclei", fontsize=19)
+#
+#
+# #plt.legend(fontsize=12)
+# plt.grid(True)
+#
+# # =========================
+# # SAVE FIGURE (HIGH QUALITY)
+# # =========================
+# plt.savefig(save_path, dpi=300, bbox_inches="tight")
+#
+# print(f"Figure saved at: {save_path}")
+#
+# plt.show()
 
-# =========================
-# PATHS
-# =========================
-mask_dir = r"C:\Users\amahbod\projects\fulbright\datasets\NuFuseRank\custom_split\PCNS\merged_labels"
-#csv_path = r"C:\Users\amahbod\projects\fulbright\results\NuInsSeg_entire\hovernext\preds_hovernext_54.17\metrics_results_54.17.csv"  # update if needed
-csv_path = r"C:\Users\amahbod\projects\fulbright\results\PCNS\hovernext\metrics_results_PCNS_hovernext_baseline_56.74.csv"
-
-
-# =========================
-# LOAD CSV
-# =========================
-df = pd.read_csv(csv_path)
-
-# assume column "name" contains file names
-# adjust if needed
-names = df["image"].tolist()
-
-
-min_instances = float("inf")
-max_instances = 0
-
-min_sample = None
-max_sample = None
-
-
-# =========================
-# FUNCTION: count nuclei
-# =========================
-def count_instances(mask):
-    # assuming instance masks: 0=background, 1,2,... = nuclei
-    unique_ids = np.unique(mask)
-    unique_ids = unique_ids[unique_ids != 0]  # remove background
-    return len(unique_ids)
-
-
-# =========================
-# COMPUTE INSTANCE COUNTS
-# =========================
-num_nuclei_list = []
-
-for name in tqdm(names):
-    # handle different extensions if needed
-    base = os.path.splitext(name)[0]
-
-    # try possible formats
-    possible_paths = [
-        os.path.join(mask_dir, base + ".tif"),
-        os.path.join(mask_dir, base + ".tiff"),
-        os.path.join(mask_dir, base + ".png"),
-        os.path.join(mask_dir, base + ".npy"),
-    ]
-
-    mask_path = None
-    for p in possible_paths:
-        if os.path.exists(p):
-            mask_path = p
-            break
-
-    if mask_path is None:
-        print(f"Mask not found for {name}")
-        num_nuclei_list.append(np.nan)
-        continue
-
-    # load mask
-    if mask_path.endswith(".npy"):
-        mask = np.load(mask_path)
-    else:
-        mask = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)
-
-    # count nuclei
-    n_inst = count_instances(mask)
-    num_nuclei_list.append(n_inst)
-
-
-    # track min and max
-    if n_inst < min_instances:
-        min_instances = n_inst
-        min_sample = name
-
-    if n_inst > max_instances:
-        max_instances = n_inst
-        max_sample = name
-
-# add to dataframe
-df["num_nuclei"] = num_nuclei_list
-
-# remove missing
-df = df.dropna(subset=["num_nuclei"])
-
-
-
-# =========================
-# OUTPUT PATH
-# =========================
-save_path = r"C:\Users\amahbod\projects\fulbright\results\pq_aji_vs_nuclei.png"
-
-# =========================
-# PLOT
-# =========================
-plt.figure(figsize=(8, 6))
-
-plt.scatter(df["num_nuclei"], df["pq"]*100, color="blue", alpha=0.6, label="PQ")
-#plt.scatter(df["num_nuclei"], df["aji"]*100 color="red", alpha=0.6, label="AJI")
-
-plt.xlabel("Number of Nuclei per Image", fontsize=19)
-plt.ylabel("PQ (%)", fontsize=19)
-#plt.title("PQ and AJI vs Number of Nuclei", fontsize=19)
-#plt.title("PQ vs Number of Nuclei", fontsize=19)
-
-
-#plt.legend(fontsize=12)
-plt.grid(True)
-
-# =========================
-# SAVE FIGURE (HIGH QUALITY)
-# =========================
-plt.savefig(save_path, dpi=300, bbox_inches="tight")
-
-print(f"Figure saved at: {save_path}")
-
-plt.show()
-
-# =========================
-# SAVE CSV WITH NUM_NUCLEI
-# =========================
-csv_save_path = r"C:\Users\amahbod\projects\fulbright\results\metrics_with_nuclei_count.csv"
-df.to_csv(csv_save_path, index=False)
-print(f"CSV saved at: {csv_save_path}")
-
-print(f"Minimum number of nuclei: {min_instances} (sample: {min_sample})")
-print(f"Maximum number of nuclei: {max_instances} (sample: {max_sample})")
+# # =========================
+# # SAVE CSV WITH NUM_NUCLEI
+# # =========================
+# csv_save_path = r"C:\Users\amahbod\projects\fulbright\results\metrics_with_nuclei_count.csv"
+# df.to_csv(csv_save_path, index=False)
+# print(f"CSV saved at: {csv_save_path}")
+#
+# print(f"Minimum number of nuclei: {min_instances} (sample: {min_sample})")
+# print(f"Maximum number of nuclei: {max_instances} (sample: {max_sample})")
 
 
 ######################################################################################################################
@@ -580,7 +580,7 @@ print(f"Maximum number of nuclei: {max_instances} (sample: {max_sample})")
 #         print(f"  - {m}")
 
 #######################################################################################################################
-# # nuber of instnces per image and save them in csv file
+# # number of instnces per image and save them in csv file
 # import os
 # import numpy as np
 # import pandas as pd
@@ -627,6 +627,7 @@ print(f"Maximum number of nuclei: {max_instances} (sample: {max_sample})")
 
 
 #######################################################################################################################
+# # tables to bar chart for nuinsseg (all mertics)
 # import numpy as np
 # import matplotlib.pyplot as plt
 #
@@ -694,97 +695,395 @@ print(f"Maximum number of nuclei: {max_instances} (sample: {max_sample})")
 # plot_model(hovernext, "Hover-Next Performance", "hovernext_bar.png")
 # plot_model(cellvit, "CellViT Performance", "cellvit_bar.png")
 
-#######################################################################################################################
-# # Tables to barcharts
+######################################################################################################################
+# # # Tables to barcharts for NuInsseg (entire and subset)
+#
 # import numpy as np
 # import matplotlib.pyplot as plt
+# from matplotlib.patches import Patch
 #
 # # -------------------------
 # # Data
 # # -------------------------
-# labels = ["baseline", "#1", "#1,2", "#1,2,3", "#1,2,3,4"]
-#
-# # entire NuInsSeg
-# hovernet  = [53.40, 56.17, 57.05, 58.18, 64.07]
-# hovernext = [54.17, 56.80, 58.29, 58.45, 64.92]
-# cellvit   = [56.44, 59.72, 60.92, 61.93, 68.44]
-#
-# # # sub NuInsSeg
-# # hovernet  = [28.68, 40.03, 60.21, 60.90, 67.13]
-# # hovernext = [28.00, 40.35, 64.95, 64.18, 70.61]
-# # cellvit   = [29.07, 43.45, 65.66, 66.15, 72.26]
+# mod_labels = ["baseline", "#1", "#1,2", "#1,2,3", "#1,2,3,4"]
+# mod_colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple"]
 #
 # models = ["Hover-Net", "Hover-Next", "CellViT"]
-# data = [hovernet, hovernext, cellvit]
 #
-# # -------------------------
-# # Colors (consistent across models)
-# # -------------------------
-# colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple"]
+#
+# # # Nuinsseg (full)
+# # # PQ
+# # hovernet_PQ  = [53.40, 56.17, 57.05, 58.18, 64.07]
+# # hovernext_PQ = [54.17, 56.80, 58.29, 58.45, 64.92]
+# # cellvit_PQ   = [56.44, 59.72, 60.92, 61.93, 68.44]
+# #
+# # # Dice
+# # hovernet_dice  = [80.29, 81.31, 83.73, 83.75, 86.60]
+# # hovernext_dice = [82.59, 83.81, 85.73, 85.66, 88.76]
+# # cellvit_dice   = [81.92, 83.17, 85.32, 85.25, 88.40]
+#
+#
+#
+# # Nuinsseg (sub)
+# hovernet_PQ  = [28.68, 40.03, 60.21, 60.90, 67.13]
+# hovernext_PQ = [28.00, 40.35, 64.95, 64.18, 70.61]
+# cellvit_PQ   = [29.07, 43.45, 65.66, 66.15, 72.26]
+#
+#
+# hovernet_dice  = [ 38.79 , 49.84, 73.38, 75.62, 77.26]
+# hovernext_dice = [ 38.06 , 51.14, 79.27, 79.02, 80.40]
+# cellvit_dice   = [ 38.57 , 53.46, 79.87, 81.48, 81.89]
+#
+# pq_data = [hovernet_PQ, hovernext_PQ, cellvit_PQ]
+# dice_data = [hovernet_dice, hovernext_dice, cellvit_dice]
 #
 # # -------------------------
 # # Layout settings
 # # -------------------------
 # n_models = len(models)
-# n_bars = len(labels)
+# n_mods = len(mod_labels)
 #
-# bar_width = 0.15
-# group_spacing = 0.6
+# bar_width = 0.09
+# subgroup_gap = 0.14
+# group_gap = 0.55
 #
-# # Compute x positions
-# x_positions = []
+# # x positions
+# all_positions = []
+# model_centers = []
+#
+# current_x = 0.0
 # for i in range(n_models):
-#     start = i * (n_bars * bar_width + group_spacing)
-#     x_positions.append([start + j * bar_width for j in range(n_bars)])
+#     pq_positions = [current_x + j * bar_width for j in range(n_mods)]
+#     dice_start = pq_positions[-1] + bar_width + subgroup_gap
+#     dice_positions = [dice_start + j * bar_width for j in range(n_mods)]
+#
+#     all_positions.append({
+#         "pq": pq_positions,
+#         "dice": dice_positions
+#     })
+#
+#     center = (pq_positions[0] + dice_positions[-1]) / 2
+#     model_centers.append(center)
+#
+#     current_x = dice_positions[-1] + bar_width + group_gap
 #
 # # -------------------------
 # # Plot
 # # -------------------------
-# plt.figure(figsize=(10, 6))
+# fig, ax = plt.subplots(figsize=(14, 6))
 #
-# for i, model_data in enumerate(data):
-#     for j, value in enumerate(model_data):
-#         plt.bar(
-#             x_positions[i][j],
-#             value,
-#             bar_width,
-#             color=colors[j]
+# for i in range(n_models):
+#     for j in range(n_mods):
+#         ax.bar(
+#             all_positions[i]["pq"][j],
+#             pq_data[i][j],
+#             width=bar_width,
+#             color=mod_colors[j]
+#         )
+#         ax.bar(
+#             all_positions[i]["dice"][j],
+#             dice_data[i][j],
+#             width=bar_width,
+#             color=mod_colors[j]
 #         )
 #
-# # X-axis: model names centered under each group
-# group_centers = [np.mean(pos) for pos in x_positions]
-# plt.xticks(group_centers, models, fontsize=16)
+# # -------------------------
+# # X-axis labels
+# # -------------------------
+# ax.set_xticks(model_centers)
+# ax.set_xticklabels(models, fontsize=19)
+# ax.tick_params(axis="x", pad=38)
 #
-# # Labels and title
-# plt.ylabel("PQ (%)", fontsize=16)
-# #plt.title("PQ Comparison Across Models and Modifications", fontsize=16)
+# for i in range(n_models):
+#     pq_center = np.mean(all_positions[i]["pq"])
+#     dice_center = np.mean(all_positions[i]["dice"])
+#     ax.text(
+#         pq_center, -0.04, "PQ",
+#         ha="center", va="top", fontsize=19,
+#         transform=ax.get_xaxis_transform()
+#     )
+#     ax.text(
+#         dice_center, -0.04, "Dice",
+#         ha="center", va="top", fontsize=19,
+#         transform=ax.get_xaxis_transform()
+#     )
 #
-# # Y-axis start from 40
-# plt.ylim(25, 80)
+# # -------------------------
+# # Y-axis and grid
+# # -------------------------
+# ax.set_ylabel("Score (%)", fontsize=19)
+# ax.set_ylim(25, 95)
+# ax.grid(axis="y", linestyle="--", alpha=0.5)
 #
-# # Grid
-# plt.grid(axis="y", linestyle="--", alpha=0.5)
-#
-# # Legend (modifications)
-# handles = [
-#     plt.Rectangle((0, 0), 1, 1, color=colors[i])
-#     for i in range(n_bars)
-# ]
-# #plt.legend(handles, labels, title="Modifications")
-# plt.legend(
-#     handles,
-#     labels,
+# # -------------------------
+# # Legend
+# # -------------------------
+# handles = [Patch(facecolor=mod_colors[i], label=mod_labels[i]) for i in range(n_mods)]
+# ax.legend(
+#     handles=handles,
 #     title="Modifications",
 #     fontsize=13,
-#     title_fontsize=14
+#     title_fontsize=14,
+#     loc="upper left"
 # )
 #
-# # Layout & save
+# # -------------------------
+# # Final layout
+# # -------------------------
 # plt.tight_layout()
-# plt.savefig("pq_grouped_models.png", dpi=300)
+# plt.subplots_adjust(bottom=0.24)
+# plt.savefig("nuinsseg_pq_dice_grouped_oneplot.png", dpi=300, bbox_inches="tight")
 # plt.show()
-
 #######################################################################################################################
+# # Tables to barcharts for cryonuseg
+# import numpy as np
+# import matplotlib.pyplot as plt
+# from matplotlib.patches import Patch
+# # -------------------------
+# # Data
+# # -------------------------
+# mod_labels = ["baseline", "#2", "#2,3", "#2,3,4"]
+# mod_colors = ["tab:blue", "tab:green", "tab:red", "tab:purple"]
+#
+# models = ["Hover-Net", "Hover-Next", "CellViT"]
+#
+# # PQ
+# hovernet_pq  = [47.84, 50.47, 49.31, 59.22]
+# hovernext_pq = [48.12, 49.96, 49.97, 58.92]
+# cellvit_pq   = [45.79, 47.35, 49.21, 58.55]
+#
+# # Dice
+# hovernet_dice  = [80.33, 82.74, 81.15, 86.09]
+# hovernext_dice = [80.31, 82.16, 80.85, 85.85]
+# cellvit_dice   = [79.35, 81.15, 81.20, 85.93]
+#
+# pq_data = [hovernet_pq, hovernext_pq, cellvit_pq]
+# dice_data = [hovernet_dice, hovernext_dice, cellvit_dice]
+#
+# # -------------------------
+# # Layout settings
+# # -------------------------
+# n_models = len(models)
+# n_mods = len(mod_labels)
+#
+# bar_width = 0.09
+# subgroup_gap = 0.14
+# group_gap = 0.55
+#
+# # x positions
+# all_positions = []
+# model_centers = []
+#
+# current_x = 0.0
+# for i in range(n_models):
+#     pq_positions = [current_x + j * bar_width for j in range(n_mods)]
+#     dice_start = pq_positions[-1] + bar_width + subgroup_gap
+#     dice_positions = [dice_start + j * bar_width for j in range(n_mods)]
+#
+#     all_positions.append({
+#         "pq": pq_positions,
+#         "dice": dice_positions
+#     })
+#
+#     center = (pq_positions[0] + dice_positions[-1]) / 2
+#     model_centers.append(center)
+#
+#     current_x = dice_positions[-1] + bar_width + group_gap
+#
+# # -------------------------
+# # Plot
+# # -------------------------
+# fig, ax = plt.subplots(figsize=(14, 6))
+#
+# for i in range(n_models):
+#     for j in range(n_mods):
+#         ax.bar(
+#             all_positions[i]["pq"][j],
+#             pq_data[i][j],
+#             width=bar_width,
+#             color=mod_colors[j]
+#         )
+#         ax.bar(
+#             all_positions[i]["dice"][j],
+#             dice_data[i][j],
+#             width=bar_width,
+#             color=mod_colors[j]
+#         )
+#
+# # -------------------------
+# # X-axis labels
+# # -------------------------
+# ax.set_xticks(model_centers)
+# ax.set_xticklabels(models, fontsize=19)
+# ax.tick_params(axis="x", pad=38)
+#
+# for i in range(n_models):
+#     pq_center = np.mean(all_positions[i]["pq"])
+#     dice_center = np.mean(all_positions[i]["dice"])
+#     ax.text(
+#         pq_center, -0.04, "PQ",
+#         ha="center", va="top", fontsize=19,
+#         transform=ax.get_xaxis_transform()
+#     )
+#     ax.text(
+#         dice_center, -0.04, "Dice",
+#         ha="center", va="top", fontsize=19,
+#         transform=ax.get_xaxis_transform()
+#     )
+#
+# # -------------------------
+# # Y-axis and grid
+# # -------------------------
+# ax.set_ylabel("Score (%)", fontsize=19)
+# ax.set_ylim(25, 95)
+# ax.grid(axis="y", linestyle="--", alpha=0.5)
+#
+# # -------------------------
+# # Legend
+# # -------------------------
+# handles = [Patch(facecolor=mod_colors[i], label=mod_labels[i]) for i in range(n_mods)]
+# ax.legend(
+#     handles=handles,
+#     title="Modifications",
+#     fontsize=13,
+#     title_fontsize=14,
+#     loc="upper left"
+# )
+#
+# # -------------------------
+# # Final layout
+# # -------------------------
+# plt.tight_layout()
+# plt.subplots_adjust(bottom=0.24)
+# plt.savefig("cryonuseg_pq_dice_grouped_oneplot.png", dpi=300, bbox_inches="tight")
+# plt.show()
+# #######################################################################################################################
+# Tables to barcharts for PCNS
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
+
+# -------------------------
+# Data
+# -------------------------
+mod_labels = ["baseline", "#2", "#2,4"]
+mod_colors = ["tab:blue", "tab:green", "tab:purple"]
+
+models = ["Hover-Net", "Hover-Next", "CellViT"]
+
+# PQ
+hovernet_PQ  = [58.04, 58.36, 66.47]
+hovernext_PQ = [56.74, 56.75, 64.46]
+cellvit_PQ   = [60.75, 60.74, 69.13]
+
+# Dice
+hovernet_dice  = [79.71, 81.95, 86.01]
+hovernext_dice = [79.87, 81.98, 85.97]
+cellvit_dice   = [81.20, 83.07, 87.26]
+
+pq_data = [hovernet_PQ, hovernext_PQ, cellvit_PQ]
+dice_data = [hovernet_dice, hovernext_dice, cellvit_dice]
+
+# -------------------------
+# Layout settings
+# -------------------------
+n_models = len(models)
+n_mods = len(mod_labels)
+
+bar_width = 0.09
+subgroup_gap = 0.14
+group_gap = 0.55
+
+# x positions
+all_positions = []
+model_centers = []
+
+current_x = 0.0
+for i in range(n_models):
+    pq_positions = [current_x + j * bar_width for j in range(n_mods)]
+    dice_start = pq_positions[-1] + bar_width + subgroup_gap
+    dice_positions = [dice_start + j * bar_width for j in range(n_mods)]
+
+    all_positions.append({
+        "pq": pq_positions,
+        "dice": dice_positions
+    })
+
+    center = (pq_positions[0] + dice_positions[-1]) / 2
+    model_centers.append(center)
+
+    current_x = dice_positions[-1] + bar_width + group_gap
+
+# -------------------------
+# Plot
+# -------------------------
+fig, ax = plt.subplots(figsize=(14, 6))
+
+for i in range(n_models):
+    for j in range(n_mods):
+        ax.bar(
+            all_positions[i]["pq"][j],
+            pq_data[i][j],
+            width=bar_width,
+            color=mod_colors[j]
+        )
+        ax.bar(
+            all_positions[i]["dice"][j],
+            dice_data[i][j],
+            width=bar_width,
+            color=mod_colors[j]
+        )
+
+# -------------------------
+# X-axis labels
+# -------------------------
+ax.set_xticks(model_centers)
+ax.set_xticklabels(models, fontsize=16)
+ax.tick_params(axis="x", pad=38)   # more distance between model names and PQ/Dice
+
+# Put PQ and Dice closer to x-axis
+for i in range(n_models):
+    pq_center = np.mean(all_positions[i]["pq"])
+    dice_center = np.mean(all_positions[i]["dice"])
+    ax.text(
+        pq_center, -0.04, "PQ",
+        ha="center", va="top", fontsize=16,
+        transform=ax.get_xaxis_transform()
+    )
+    ax.text(
+        dice_center, -0.04, "Dice",
+        ha="center", va="top", fontsize=16,
+        transform=ax.get_xaxis_transform()
+    )
+
+# -------------------------
+# Y-axis and grid
+# -------------------------
+ax.set_ylabel("Score (%)", fontsize=16)
+ax.set_ylim(25, 95)
+ax.grid(axis="y", linestyle="--", alpha=0.5)
+
+# -------------------------
+# Legend
+# -------------------------
+handles = [Patch(facecolor=mod_colors[i], label=mod_labels[i]) for i in range(n_mods)]
+ax.legend(
+    handles=handles,
+    title="Modifications",
+    fontsize=13,
+    title_fontsize=14,
+    loc="upper left"
+)
+
+# -------------------------
+# Final layout
+# -------------------------
+plt.tight_layout()
+plt.subplots_adjust(bottom=0.24)
+plt.savefig("pcns_pq_dice_grouped_oneplot.png", dpi=300, bbox_inches="tight")
+plt.show()
+
+# #######################################################################################################################
 # # visualization of ring effect
 # import os
 # import numpy as np
