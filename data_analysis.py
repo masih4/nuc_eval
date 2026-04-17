@@ -696,35 +696,35 @@
 # plot_model(cellvit, "CellViT Performance", "cellvit_bar.png")
 
 ######################################################################################################################
-# # # Tables to barcharts for NuInsseg (entire and subset)
-#
-# import numpy as np
-# import matplotlib.pyplot as plt
-# from matplotlib.patches import Patch
-#
-# # -------------------------
-# # Data
-# # -------------------------
-# mod_labels = ["baseline", "#1", "#1,2", "#1,2,3", "#1,2,3,4"]
-# mod_colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple"]
-#
-# models = ["Hover-Net", "Hover-Next", "CellViT"]
-#
-#
-# # # Nuinsseg (full)
-# # # PQ
-# # hovernet_PQ  = [53.40, 56.17, 57.05, 58.18, 64.07]
-# # hovernext_PQ = [54.17, 56.80, 58.29, 58.45, 64.92]
-# # cellvit_PQ   = [56.44, 59.72, 60.92, 61.93, 68.44]
-# #
-# # # Dice
-# # hovernet_dice  = [80.29, 81.31, 83.73, 83.75, 86.60]
-# # hovernext_dice = [82.59, 83.81, 85.73, 85.66, 88.76]
-# # cellvit_dice   = [81.92, 83.17, 85.32, 85.25, 88.40]
-#
-#
-#
-# # Nuinsseg (sub)
+# # Tables to barcharts for NuInsseg (entire and subset)
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
+
+# -------------------------
+# Data
+# -------------------------
+mod_labels = ["baseline", "#1", "#1,2", "#1,2,3", "#1,2,3,4"]
+mod_colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple"]
+
+models = ["Hover-Net", "Hover-Next", "CellViT"]
+
+
+# # Nuinsseg (full)
+# # PQ
+hovernet_PQ  = [53.40, 56.17, 57.05, 58.18, 64.07]
+hovernext_PQ = [54.17, 56.80, 58.29, 58.45, 64.92]
+cellvit_PQ   = [56.44, 59.72, 60.92, 61.93, 68.44]
+
+# Dice
+hovernet_dice  = [80.29, 81.31, 83.73, 83.75, 86.60]
+hovernext_dice = [82.59, 83.81, 85.73, 85.66, 88.76]
+cellvit_dice   = [81.92, 83.17, 85.32, 85.25, 88.40]
+
+
+
+# Nuinsseg (sub)
 # hovernet_PQ  = [28.68, 40.03, 60.21, 60.90, 67.13]
 # hovernext_PQ = [28.00, 40.35, 64.95, 64.18, 70.61]
 # cellvit_PQ   = [29.07, 43.45, 65.66, 66.15, 72.26]
@@ -733,107 +733,108 @@
 # hovernet_dice  = [ 38.79 , 49.84, 73.38, 75.62, 77.26]
 # hovernext_dice = [ 38.06 , 51.14, 79.27, 79.02, 80.40]
 # cellvit_dice   = [ 38.57 , 53.46, 79.87, 81.48, 81.89]
-#
-# pq_data = [hovernet_PQ, hovernext_PQ, cellvit_PQ]
-# dice_data = [hovernet_dice, hovernext_dice, cellvit_dice]
-#
-# # -------------------------
-# # Layout settings
-# # -------------------------
-# n_models = len(models)
-# n_mods = len(mod_labels)
-#
-# bar_width = 0.09
-# subgroup_gap = 0.14
-# group_gap = 0.55
-#
-# # x positions
-# all_positions = []
-# model_centers = []
-#
-# current_x = 0.0
-# for i in range(n_models):
-#     pq_positions = [current_x + j * bar_width for j in range(n_mods)]
-#     dice_start = pq_positions[-1] + bar_width + subgroup_gap
-#     dice_positions = [dice_start + j * bar_width for j in range(n_mods)]
-#
-#     all_positions.append({
-#         "pq": pq_positions,
-#         "dice": dice_positions
-#     })
-#
-#     center = (pq_positions[0] + dice_positions[-1]) / 2
-#     model_centers.append(center)
-#
-#     current_x = dice_positions[-1] + bar_width + group_gap
-#
-# # -------------------------
-# # Plot
-# # -------------------------
-# fig, ax = plt.subplots(figsize=(14, 6))
-#
-# for i in range(n_models):
-#     for j in range(n_mods):
-#         ax.bar(
-#             all_positions[i]["pq"][j],
-#             pq_data[i][j],
-#             width=bar_width,
-#             color=mod_colors[j]
-#         )
-#         ax.bar(
-#             all_positions[i]["dice"][j],
-#             dice_data[i][j],
-#             width=bar_width,
-#             color=mod_colors[j]
-#         )
-#
-# # -------------------------
-# # X-axis labels
-# # -------------------------
-# ax.set_xticks(model_centers)
-# ax.set_xticklabels(models, fontsize=19)
-# ax.tick_params(axis="x", pad=38)
-#
-# for i in range(n_models):
-#     pq_center = np.mean(all_positions[i]["pq"])
-#     dice_center = np.mean(all_positions[i]["dice"])
-#     ax.text(
-#         pq_center, -0.04, "PQ",
-#         ha="center", va="top", fontsize=19,
-#         transform=ax.get_xaxis_transform()
-#     )
-#     ax.text(
-#         dice_center, -0.04, "Dice",
-#         ha="center", va="top", fontsize=19,
-#         transform=ax.get_xaxis_transform()
-#     )
-#
-# # -------------------------
-# # Y-axis and grid
-# # -------------------------
-# ax.set_ylabel("Score (%)", fontsize=19)
-# ax.set_ylim(25, 95)
-# ax.grid(axis="y", linestyle="--", alpha=0.5)
-#
-# # -------------------------
-# # Legend
-# # -------------------------
-# handles = [Patch(facecolor=mod_colors[i], label=mod_labels[i]) for i in range(n_mods)]
-# ax.legend(
-#     handles=handles,
-#     title="Modifications",
-#     fontsize=13,
-#     title_fontsize=14,
-#     loc="upper left"
-# )
-#
-# # -------------------------
-# # Final layout
-# # -------------------------
-# plt.tight_layout()
-# plt.subplots_adjust(bottom=0.24)
-# plt.savefig("nuinsseg_pq_dice_grouped_oneplot.png", dpi=300, bbox_inches="tight")
-# plt.show()
+
+pq_data = [hovernet_PQ, hovernext_PQ, cellvit_PQ]
+dice_data = [hovernet_dice, hovernext_dice, cellvit_dice]
+
+# -------------------------
+# Layout settings
+# -------------------------
+n_models = len(models)
+n_mods = len(mod_labels)
+
+bar_width = 0.09
+subgroup_gap = 0.14
+group_gap = 0.55
+
+# x positions
+all_positions = []
+model_centers = []
+
+current_x = 0.0
+for i in range(n_models):
+    pq_positions = [current_x + j * bar_width for j in range(n_mods)]
+    dice_start = pq_positions[-1] + bar_width + subgroup_gap
+    dice_positions = [dice_start + j * bar_width for j in range(n_mods)]
+
+    all_positions.append({
+        "pq": pq_positions,
+        "dice": dice_positions
+    })
+
+    center = (pq_positions[0] + dice_positions[-1]) / 2
+    model_centers.append(center)
+
+    current_x = dice_positions[-1] + bar_width + group_gap
+
+# -------------------------
+# Plot
+# -------------------------
+fig, ax = plt.subplots(figsize=(14, 6))
+
+for i in range(n_models):
+    for j in range(n_mods):
+        ax.bar(
+            all_positions[i]["pq"][j],
+            pq_data[i][j],
+            width=bar_width,
+            color=mod_colors[j]
+        )
+        ax.bar(
+            all_positions[i]["dice"][j],
+            dice_data[i][j],
+            width=bar_width,
+            color=mod_colors[j]
+        )
+
+# -------------------------
+# X-axis labels
+# -------------------------
+ax.set_xticks(model_centers)
+ax.set_xticklabels(models, fontsize=22)
+ax.tick_params(axis="x", pad=38)
+
+for i in range(n_models):
+    pq_center = np.mean(all_positions[i]["pq"])
+    dice_center = np.mean(all_positions[i]["dice"])
+    ax.text(
+        pq_center, -0.04, "PQ",
+        ha="center", va="top", fontsize=22,
+        transform=ax.get_xaxis_transform()
+    )
+    ax.text(
+        dice_center, -0.04, "Dice",
+        ha="center", va="top", fontsize=22,
+        transform=ax.get_xaxis_transform()
+    )
+
+# -------------------------
+# Y-axis and grid
+# -------------------------
+ax.set_ylabel("Score (%)", fontsize=22)
+ax.tick_params(axis="y", labelsize=14)
+ax.set_ylim(25, 95)
+ax.grid(axis="y", linestyle="--", alpha=0.5)
+
+# -------------------------
+# Legend
+# -------------------------
+handles = [Patch(facecolor=mod_colors[i], label=mod_labels[i]) for i in range(n_mods)]
+ax.legend(
+    handles=handles,
+    title="Modifications",
+    fontsize=13,
+    title_fontsize=14,
+    loc="upper left"
+)
+
+# -------------------------
+# Final layout
+# -------------------------
+plt.tight_layout()
+plt.subplots_adjust(bottom=0.24)
+plt.savefig("nuinsseg_pq_dice_grouped_oneplot.png", dpi=300, bbox_inches="tight")
+plt.show()
 #######################################################################################################################
 # # Tables to barcharts for cryonuseg
 # import numpy as np
@@ -914,7 +915,7 @@
 # # X-axis labels
 # # -------------------------
 # ax.set_xticks(model_centers)
-# ax.set_xticklabels(models, fontsize=19)
+# ax.set_xticklabels(models, fontsize=22)
 # ax.tick_params(axis="x", pad=38)
 #
 # for i in range(n_models):
@@ -922,19 +923,20 @@
 #     dice_center = np.mean(all_positions[i]["dice"])
 #     ax.text(
 #         pq_center, -0.04, "PQ",
-#         ha="center", va="top", fontsize=19,
+#         ha="center", va="top", fontsize=22,
 #         transform=ax.get_xaxis_transform()
 #     )
 #     ax.text(
 #         dice_center, -0.04, "Dice",
-#         ha="center", va="top", fontsize=19,
+#         ha="center", va="top", fontsize=22,
 #         transform=ax.get_xaxis_transform()
 #     )
 #
 # # -------------------------
 # # Y-axis and grid
 # # -------------------------
-# ax.set_ylabel("Score (%)", fontsize=19)
+# ax.set_ylabel("Score (%)", fontsize=22)
+# ax.tick_params(axis="y", labelsize=14)
 # ax.set_ylim(25, 95)
 # ax.grid(axis="y", linestyle="--", alpha=0.5)
 #
@@ -957,131 +959,132 @@
 # plt.subplots_adjust(bottom=0.24)
 # plt.savefig("cryonuseg_pq_dice_grouped_oneplot.png", dpi=300, bbox_inches="tight")
 # plt.show()
-# #######################################################################################################################
-# Tables to barcharts for PCNS
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.patches import Patch
-
-# -------------------------
-# Data
-# -------------------------
-mod_labels = ["baseline", "#2", "#2,4"]
-mod_colors = ["tab:blue", "tab:green", "tab:purple"]
-
-models = ["Hover-Net", "Hover-Next", "CellViT"]
-
-# PQ
-hovernet_PQ  = [58.04, 58.36, 66.47]
-hovernext_PQ = [56.74, 56.75, 64.46]
-cellvit_PQ   = [60.75, 60.74, 69.13]
-
-# Dice
-hovernet_dice  = [79.71, 81.95, 86.01]
-hovernext_dice = [79.87, 81.98, 85.97]
-cellvit_dice   = [81.20, 83.07, 87.26]
-
-pq_data = [hovernet_PQ, hovernext_PQ, cellvit_PQ]
-dice_data = [hovernet_dice, hovernext_dice, cellvit_dice]
-
-# -------------------------
-# Layout settings
-# -------------------------
-n_models = len(models)
-n_mods = len(mod_labels)
-
-bar_width = 0.09
-subgroup_gap = 0.14
-group_gap = 0.55
-
-# x positions
-all_positions = []
-model_centers = []
-
-current_x = 0.0
-for i in range(n_models):
-    pq_positions = [current_x + j * bar_width for j in range(n_mods)]
-    dice_start = pq_positions[-1] + bar_width + subgroup_gap
-    dice_positions = [dice_start + j * bar_width for j in range(n_mods)]
-
-    all_positions.append({
-        "pq": pq_positions,
-        "dice": dice_positions
-    })
-
-    center = (pq_positions[0] + dice_positions[-1]) / 2
-    model_centers.append(center)
-
-    current_x = dice_positions[-1] + bar_width + group_gap
-
-# -------------------------
-# Plot
-# -------------------------
-fig, ax = plt.subplots(figsize=(14, 6))
-
-for i in range(n_models):
-    for j in range(n_mods):
-        ax.bar(
-            all_positions[i]["pq"][j],
-            pq_data[i][j],
-            width=bar_width,
-            color=mod_colors[j]
-        )
-        ax.bar(
-            all_positions[i]["dice"][j],
-            dice_data[i][j],
-            width=bar_width,
-            color=mod_colors[j]
-        )
-
-# -------------------------
-# X-axis labels
-# -------------------------
-ax.set_xticks(model_centers)
-ax.set_xticklabels(models, fontsize=16)
-ax.tick_params(axis="x", pad=38)   # more distance between model names and PQ/Dice
-
-# Put PQ and Dice closer to x-axis
-for i in range(n_models):
-    pq_center = np.mean(all_positions[i]["pq"])
-    dice_center = np.mean(all_positions[i]["dice"])
-    ax.text(
-        pq_center, -0.04, "PQ",
-        ha="center", va="top", fontsize=16,
-        transform=ax.get_xaxis_transform()
-    )
-    ax.text(
-        dice_center, -0.04, "Dice",
-        ha="center", va="top", fontsize=16,
-        transform=ax.get_xaxis_transform()
-    )
-
-# -------------------------
-# Y-axis and grid
-# -------------------------
-ax.set_ylabel("Score (%)", fontsize=16)
-ax.set_ylim(25, 95)
-ax.grid(axis="y", linestyle="--", alpha=0.5)
-
-# -------------------------
-# Legend
-# -------------------------
-handles = [Patch(facecolor=mod_colors[i], label=mod_labels[i]) for i in range(n_mods)]
-ax.legend(
-    handles=handles,
-    title="Modifications",
-    fontsize=13,
-    title_fontsize=14,
-    loc="upper left"
-)
-
-# -------------------------
-# Final layout
-# -------------------------
-plt.tight_layout()
-plt.subplots_adjust(bottom=0.24)
-plt.savefig("pcns_pq_dice_grouped_oneplot.png", dpi=300, bbox_inches="tight")
-plt.show()
+#######################################################################################################################
+# # Tables to barcharts for PCNS
+# import numpy as np
+# import matplotlib.pyplot as plt
+# from matplotlib.patches import Patch
+#
+# # -------------------------
+# # Data
+# # -------------------------
+# mod_labels = ["baseline", "#2", "#2,4"]
+# mod_colors = ["tab:blue", "tab:green", "tab:purple"]
+#
+# models = ["Hover-Net", "Hover-Next", "CellViT"]
+#
+# # PQ
+# hovernet_PQ  = [58.04, 58.36, 66.47]
+# hovernext_PQ = [56.74, 56.75, 64.46]
+# cellvit_PQ   = [60.75, 60.74, 69.13]
+#
+# # Dice
+# hovernet_dice  = [79.71, 81.95, 86.01]
+# hovernext_dice = [79.87, 81.98, 85.97]
+# cellvit_dice   = [81.20, 83.07, 87.26]
+#
+# pq_data = [hovernet_PQ, hovernext_PQ, cellvit_PQ]
+# dice_data = [hovernet_dice, hovernext_dice, cellvit_dice]
+#
+# # -------------------------
+# # Layout settings
+# # -------------------------
+# n_models = len(models)
+# n_mods = len(mod_labels)
+#
+# bar_width = 0.09
+# subgroup_gap = 0.14
+# group_gap = 0.55
+#
+# # x positions
+# all_positions = []
+# model_centers = []
+#
+# current_x = 0.0
+# for i in range(n_models):
+#     pq_positions = [current_x + j * bar_width for j in range(n_mods)]
+#     dice_start = pq_positions[-1] + bar_width + subgroup_gap
+#     dice_positions = [dice_start + j * bar_width for j in range(n_mods)]
+#
+#     all_positions.append({
+#         "pq": pq_positions,
+#         "dice": dice_positions
+#     })
+#
+#     center = (pq_positions[0] + dice_positions[-1]) / 2
+#     model_centers.append(center)
+#
+#     current_x = dice_positions[-1] + bar_width + group_gap
+#
+# # -------------------------
+# # Plot
+# # -------------------------
+# fig, ax = plt.subplots(figsize=(14, 6))
+#
+# for i in range(n_models):
+#     for j in range(n_mods):
+#         ax.bar(
+#             all_positions[i]["pq"][j],
+#             pq_data[i][j],
+#             width=bar_width,
+#             color=mod_colors[j]
+#         )
+#         ax.bar(
+#             all_positions[i]["dice"][j],
+#             dice_data[i][j],
+#             width=bar_width,
+#             color=mod_colors[j]
+#         )
+#
+# # -------------------------
+# # X-axis labels
+# # -------------------------
+# ax.set_xticks(model_centers)
+# ax.set_xticklabels(models, fontsize=22)
+# ax.tick_params(axis="x", pad=38)   # more distance between model names and PQ/Dice
+#
+# # Put PQ and Dice closer to x-axis
+# for i in range(n_models):
+#     pq_center = np.mean(all_positions[i]["pq"])
+#     dice_center = np.mean(all_positions[i]["dice"])
+#     ax.text(
+#         pq_center, -0.04, "PQ",
+#         ha="center", va="top", fontsize=22,
+#         transform=ax.get_xaxis_transform()
+#     )
+#     ax.text(
+#         dice_center, -0.04, "Dice",
+#         ha="center", va="top", fontsize=22,
+#         transform=ax.get_xaxis_transform()
+#     )
+#
+# # -------------------------
+# # Y-axis and grid
+# # -------------------------
+# ax.set_ylabel("Score (%)", fontsize=22)
+# ax.tick_params(axis="y", labelsize=14)
+# ax.set_ylim(25, 95)
+# ax.grid(axis="y", linestyle="--", alpha=0.5)
+#
+# # -------------------------
+# # Legend
+# # -------------------------
+# handles = [Patch(facecolor=mod_colors[i], label=mod_labels[i]) for i in range(n_mods)]
+# ax.legend(
+#     handles=handles,
+#     title="Modifications",
+#     fontsize=13,
+#     title_fontsize=14,
+#     loc="upper left"
+# )
+#
+# # -------------------------
+# # Final layout
+# # -------------------------
+# plt.tight_layout()
+# plt.subplots_adjust(bottom=0.24)
+# plt.savefig("pcns_pq_dice_grouped_oneplot.png", dpi=300, bbox_inches="tight")
+# plt.show()
 
 # #######################################################################################################################
 # # visualization of ring effect
