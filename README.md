@@ -26,7 +26,7 @@ Standard nuclei segmentation evaluation has several known issues that can lead t
 | **Ambiguous regions** | Annotators identify uncertain regions; however, evaluation metrics still penalize or reward predictions within these areas. | Instances that partially overlap with vague zones, as determined by a predefined threshold, are excluded prior to scoring. |
 | **Overlapping annotations** | ROI-based GT allows overlapping nuclei, but label maps force one label per pixel — losing boundary information | Accepts ROI files or list of binary masks (one instance per mask)|
 | **Score normalization** | Simple averaging treats images with 3 nuclei the same as images with 300 | Optional nuclei-weighted averaging across images of a dataset |
-| **Border uncertainty** | Exact nucleus boundaries are inherently uncertain by a few pixels | Boundary ring masks out uncertain pixels from both GT and prediction |
+| **Border uncertainty** | Exact nucleus boundaries are inherently uncertain by a few pixels | Boundary zone masks out uncertain pixels from both GT and prediction |
 
 NucEval wraps all of these into **a single function call** with sensible defaults — so the simplest call gives you standard evaluation, and each feature can be enabled independently.
 
@@ -102,15 +102,15 @@ result = NucEval([mask1, mask2, mask3], pred)
 ```
 Examples of accepted annotation formats for an image can be found in the [examples](./examples) folder.
 
-### 4. Boundary uncertainty ring
+### 4. Boundary uncertainty zone
 
 Account for annotation uncertainty at nucleus borders:
 
 ```python
-result = NucEval(gt, pred, ring_width=1) #(0 = disabled)
+result = NucEval(gt, pred, zone_width=1) #(0 = disabled)
 ```
 
-For each GT instance, the mask is eroded and dilated by `ring_width` pixels. The ring between the eroded core and the dilated boundary is masked out from **both** GT and prediction before scoring. This prevents penalizing predictions for disagreeing with GT in the inherently uncertain boundary zone.
+For each GT instance, the mask is eroded and dilated by `zone_width` pixels. The zone between the eroded core and the dilated boundary is masked out from **both** GT and prediction before scoring. This prevents penalizing predictions for disagreeing with GT in the inherently uncertain boundary zone.
 
 <p align="center">
   <img src="readme_figs/human_bladder_12_ring_comparison.png" alt="Ring Width Comparison" width="90%">
@@ -145,7 +145,7 @@ result = NucEval(gt, pred, metrics=["aji", "dq", "sq", "pq"])
 NucEval(ground_truth, prediction,  # both with size of (H,W)
         amb=None,                  # Ambiguous mask (H,W), non-zero = ambiguous
         normalized=False,          # Include num_nuclei in output
-        ring_width=0,              # Boundary ring width in pixels (0 = disabled)
+        zone_width=0,              # Boundary zone width in pixels (0 = disabled)
         overlap_thresh_amb=0.25,   # Fraction threshold for ambiguous removal
         match_iou=0.5,             # IoU threshold for PQ matching
         metrics=None)              # List of metrics, or None for all
@@ -159,7 +159,7 @@ NucEval(ground_truth, prediction,  # both with size of (H,W)
 | `prediction`         |  *required*  | Instance label map (H,W), 0 = background |
 | `amb`                | `None`       | Ambiguous region mask |
 | `normalized`         |  `False`     | If True, include `num_nuclei` in output |
-| `ring_width`         |  `0`         | Boundary ring width (0 = no ring) |
+| `zone_width`         |  `0`         | Boundary zone width (0 = no zone) |
 | `overlap_thresh_amb` |  `0.25`      | Ambiguous overlap threshold |
 | `match_iou`          |  `0.5`       | PQ matching IoU threshold |
 | `metrics`            |  `None`      | Subset of `["dice", "aji", "dq", "sq", "pq"]` |
@@ -193,7 +193,8 @@ amb_mask = imread("./examples/amb_masks/human_bladder_01.png")
 result = NucEval(gt, pred,
                  amb=amb_mask,
                  normalized=True,
-                 ring_width=2,
+                 zone_width=2,
+				 overlap_thresh_amb=0.25,
                  match_iou=0.5)
 
 print(f"Dice: {result['dice']:.4f}")
