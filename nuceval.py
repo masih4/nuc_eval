@@ -10,7 +10,7 @@ import cv2
 # =============================================================================
 
 def NucEval(ground_truth, prediction, amb=None, normalized=False,
-            ring_width=0, overlap_thresh_amb=0.25, match_iou=0.5,
+            zone_width=0, overlap_thresh_amb=0.25, match_iou=0.5,
             metrics=None):
     """
     Unified evaluation function for nuclei instance segmentation.
@@ -36,9 +36,9 @@ def NucEval(ground_truth, prediction, amb=None, normalized=False,
                        weighted (normalized) averaging across images is possible.
                        Default: False.
 
-        ring_width   : Boundary uncertainty ring width in pixels. For each GT
-                       instance, a ring of this width is built by eroding and
-                       dilating the mask. Pixels inside the ring are excluded
+        zone_width   : Boundary uncertainty zone width in pixels. For each GT
+                       instance, a zone of this width is built by eroding and
+                       dilating the mask. Pixels inside the zone are excluded
                        from both GT and prediction before scoring.
                        Set to 0 to disable. Default: 0.
 
@@ -67,8 +67,8 @@ def NucEval(ground_truth, prediction, amb=None, normalized=False,
         # With ambiguous mask
         result = NucEval(gt, pred, amb=amb_mask)
 
-        # With boundary ring
-        result = NucEval(gt, pred, ring_width=2)
+        # With boundary zone
+        result = NucEval(gt, pred, zone_width=2)
 
         # Custom IoU threshold for PQ matching
         result = NucEval(gt, pred, match_iou=0.25)
@@ -77,14 +77,14 @@ def NucEval(ground_truth, prediction, amb=None, normalized=False,
         result = NucEval(gt, pred, metrics=["dice", "pq"])
 
         # GT as ROI directory (handles overlaps)
-        result = NucEval("path/to/roiset/", pred, ring_width=2)
+        result = NucEval("path/to/roiset/", pred, zone_width=2)
 
         # GT as list of binary masks
         result = NucEval([mask1, mask2, mask3], pred)
 
         # Everything enabled
         result = NucEval(gt, pred, amb=amb_mask, normalized=True,
-                         ring_width=2, match_iou=0.5)
+                         zone_width=2, match_iou=0.5)
     """
 
     # Default: compute all metrics
@@ -126,14 +126,14 @@ def NucEval(ground_truth, prediction, amb=None, normalized=False,
         )
 
     # -------------------------------------------------
-    # 4. Apply boundary uncertainty ring
+    # 4. Apply boundary uncertainty zone
     # -------------------------------------------------
-    if ring_width > 0:
-        # pred_masks = _label_map_to_masks(pred) # create ring from predictions (not recommended)
-        # ring_mask = _build_ring_mask(pred_masks, ring_width=ring_width)
-        ring_mask = _build_ring_mask(gt_masks, ring_width=ring_width)
-        if ring_mask is not None:
-            gt_masks, pred = _apply_ring_mask(gt_masks, pred, ring_mask)
+    if zone_width > 0:
+        # pred_masks = _label_map_to_masks(pred) # create zone from predictions (not recommended)
+        # zone_mask = _build_zone_mask(pred_masks, zone_width=zone_width)
+        zone_mask = _build_zone_mask(gt_masks, zone_width=zone_width)
+        if zone_mask is not None:
+            gt_masks, pred = _apply_zone_mask(gt_masks, pred, zone_mask)
 
     # -------------------------------------------------
     # 5. Compute requested metrics
@@ -213,41 +213,41 @@ def _label_map_to_masks(label_map):
 
 
 # =============================================================================
-# Internal: Ring mask
+# Internal: zone mask
 # =============================================================================
 
-def _build_ring_mask(gt_masks, ring_width=2):
-    """Build boundary uncertainty ring mask from all GT instances."""
+def _build_zone_mask(gt_masks, zone_width=2):
+    """Build boundary uncertainty zone mask from all GT instances."""
     if len(gt_masks) == 0:
         return None
 
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
-                                       (2 * ring_width + 1, 2 * ring_width + 1))
-    ring_mask = np.zeros_like(gt_masks[0], dtype=np.uint8)
+                                       (2 * zone_width + 1, 2 * zone_width + 1))
+    zone_mask = np.zeros_like(gt_masks[0], dtype=np.uint8)
 
     for m in gt_masks:
         dilated = cv2.dilate(m, kernel, iterations=1)
         eroded = cv2.erode(m, kernel, iterations=1)
-        ring_mask = np.maximum(ring_mask, dilated - eroded)
+        zone_mask = np.maximum(zone_mask, dilated - eroded)
 
-    return ring_mask
+    return zone_mask
 
 
-def _apply_ring_mask(gt_masks, pred, ring_mask):
-    """Zero out ring pixels from both GT masks and pred."""
-    ring_bool = ring_mask > 0
+def _apply_zone_mask(gt_masks, pred, zone_mask):
+    """Zero out zone pixels from both GT masks and pred."""
+    zone_bool = zone_mask > 0
 
-    # Zero out ring pixels in GT
+    # Zero out zone pixels in GT
     gt_out = []
     for m in gt_masks:
         m_clean = m.copy()
-        m_clean[ring_bool] = 0
+        m_clean[zone_bool] = 0
         if m_clean.sum() > 0:
             gt_out.append(m_clean)
 
-    # Zero out ring pixels in prediction
+    # Zero out zone pixels in prediction
     pred_out = np.copy(pred)
-    pred_out[ring_bool] = 0
+    pred_out[zone_bool] = 0
     pred_out = _remap_label(pred_out)
 
     return gt_out, pred_out

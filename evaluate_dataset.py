@@ -33,7 +33,7 @@ output_csv = r"C:\Users\amahbod\projects\fulbright\results\metrics_results.csv"
 # -------------------------------------------------
 # NucEval hyperparameters
 # -------------------------------------------------
-ring_width = 0
+zone_width = 0
 overlap_thresh_amb = 10
 match_iou = 0.5
 
@@ -103,7 +103,7 @@ for name in tqdm(pred_files, desc="Evaluating"):
         gt, pred,
         amb=amb,
         normalized=True,
-        ring_width=ring_width,
+        zone_width=zone_width,
         overlap_thresh_amb=overlap_thresh_amb,
         match_iou=match_iou,
     )

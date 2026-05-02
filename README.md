@@ -110,7 +110,7 @@ Account for annotation uncertainty at nucleus borders:
 result = NucEval(gt, pred, zone_width=1) #(0 = disabled)
 ```
 
-For each GT instance, the mask is eroded and dilated by `zone_width` pixels. The zone between the eroded core and the dilated boundary is masked out from **both** GT and prediction before scoring. This prevents penalizing predictions for disagreeing with GT in the inherently uncertain boundary zone.
+For each GT instance, the mask is eroded and dilated by `zone_width` pixels. The zone (ring) between the eroded core and the dilated boundary is masked out from **both** GT and prediction before scoring. This prevents penalizing predictions for disagreeing with GT in the inherently uncertain boundary zone.
 
 <p align="center">
   <img src="readme_figs/human_bladder_12_ring_comparison.png" alt="Ring Width Comparison" width="90%">
