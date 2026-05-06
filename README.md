@@ -233,15 +233,19 @@ The implementations are available in the original publications. The 5-fold cross
 ---
 
 ## Citation
+Preprint on arXiv: https://arxiv.org/abs/2605.03144
 
-If you use NucEval in your research, please cite (will be updated upon publication):
+If you use NucEval in your research, please cite the following:
 
 ```bibtex
-@software{nuceval,
-  title={NucEval: Robust Evaluation of Nuclei Instance Segmentation through Handling Vague Regions, Score Normalization, Overlapping Instances, and Border Uncertainty},
-  author={Amirreza Mahboda, Ramona Woitek, Jeanne Shen},
-  year={2026},
-  url={https://github.com/masih4/nuc_eval}
+@misc{mahbod2026nucevalrobustevaluationframework,
+      title={NucEval: A Robust Evaluation Framework for Nuclear Instance Segmentation}, 
+      author={Amirreza Mahbod and Ramona Woitek and Jeanne Shen},
+      year={2026},
+      eprint={2605.03144},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2605.03144}, 
 }
 ```
 
