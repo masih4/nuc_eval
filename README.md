@@ -23,13 +23,13 @@
 Standard nuclei segmentation evaluation has several known issues that can lead to unfair or inaccurate metric scores:
 
 | Problem | Impact | NucEval Solution |
-|---------|--------|------------------|
+|:-------:|--------|------------------|
 | **Ambiguous regions** | Annotators identify uncertain regions; however, evaluation metrics still penalize or reward predictions within these areas. | Instances that partially overlap with vague zones, as determined by a predefined threshold, are excluded prior to scoring. |
-| **Overlapping annotations** | ROI-based GT allows overlapping nuclei, but label maps force one label per pixel — losing boundary information | Accepts ROI files or list of binary masks (one instance per mask)|
+| **Overlapping annotations** | ROI-based GT allows overlapping nuclei, but label maps force one label per pixel, losing boundary information | Accepts ROI files or list of binary masks (one instance per mask)|
 | **Score normalization** | Simple averaging treats images with 3 nuclei the same as images with 300 | Optional nuclei-weighted averaging across images of a dataset |
 | **Border uncertainty** | Exact nucleus boundaries are inherently uncertain by a few pixels | Boundary zone masks out uncertain pixels from both GT and prediction |
 
-NucEval wraps all of these into **a single function call** with sensible defaults — so the simplest call gives you standard evaluation, and each feature can be enabled independently.
+NucEval wraps all of these into **a single function call** with sensible defaults, so the simplest call gives you standard evaluation, and each feature can be enabled independently.
 
 ---
 
@@ -54,12 +54,17 @@ pip install pandas tifffile tqdm
 ## Quick Start
 
 ```python
+import numpy as np
+import tifffile
 from nuceval import NucEval
 
-# Standard evaluation — identical to traditional metrics
-result = NucEval(gt_label_map, pred_label_map)
-print(result)
-# {'dice': 0.92, 'aji': 0.85, 'dq': 0.90, 'sq': 0.88, 'pq': 0.79}
+gt = tifffile.imread("./examples/GT/human_bladder_01.tif")      # GT label map
+pred = np.load("./examples/Prediction/human_bladder_01.npy")    # predicted label map
+
+# Standard evaluation (identical to traditional metrics)
+result = NucEval(gt, pred)
+print({k: round(float(v), 4) for k, v in result.items()})
+# {'dice': 0.841, 'aji': 0.5605, 'dq': 0.6667, 'sq': 0.7929, 'pq': 0.5286}
 ```
 
 That's all you need for basic usage. Every other feature is opt-in.
@@ -88,7 +93,7 @@ Enable nuclei-weighted averaging across images of a dataset:
 
 ```python
 result = NucEval(gt, pred, normalized=True)
-# result now includes 'num_nuclei': 24
+# result now also includes 'num_nuclei' (24 for the Quick Start example)
 ```
 
 Use `num_nuclei` to compute weighted means, so images with more nuclei contribute proportionally more to the dataset score. For images without GT nuclei, `num_nuclei` equals the number of predicted instances, so false positives on such images still lower the weighted score.
@@ -101,7 +106,7 @@ NucEval auto-detects the ground truth format:
 # Label map (numpy array, 0 = background)
 result = NucEval(gt_label_map, pred)
 
-# ROI directory (ImageJ/FIJI .roi files — handles overlapping instances)
+# ROI directory (ImageJ/FIJI .roi files, handles overlapping instances)
 result = NucEval("path/to/roiset/", pred)
 
 # List of binary masks (from any source)
@@ -138,7 +143,7 @@ result = NucEval(gt, pred, match_iou=0.5) #(default: 0.5)
 
 # Only Dice and PQ
 result = NucEval(gt, pred, metrics=["dice", "pq"])
-# {'dice': 0.92, 'pq': 0.79}
+# {'dice': 0.841, 'pq': 0.5286} for the Quick Start example
 
 # Only instance-level metrics
 result = NucEval(gt, pred, metrics=["aji", "dq", "sq", "pq"])
@@ -222,39 +227,11 @@ Run `evaluate_dataset.py` from the repository root. By default it evaluates the 
 
 ### Synthetic example
 
-The [examples/synthetic](./examples/synthetic) folder contains a small synthetic image with four circular instances. Each instance isolates the effect of one modification, as described in the paper:
-
-| Instance | Setup | Modification shown |
-|----------|-------|--------------------|
-| 1 | Lies fully within an ambiguous region; GT and prediction do not overlap | #1 (ambiguous regions) |
-| 2 and 3 | Overlap; the shared region is assigned to opposite instances in GT and prediction | #3 (overlapping instances) |
-| 4 | Small circle whose prediction differs from the GT by a one-pixel boundary | #4 (border uncertainty) |
-
-Modification #2 (score normalization) is not included, as it is an aggregation step across images and does not apply to a single image.
-
-The folder contains the merged GT label map (`gt_labelmap.tif`), the overlap-preserving GT as one binary mask per instance (`Overlap-preserving GT/inst_*.tif`), the prediction (`pred_labelmap.tif`) and the ambiguous mask (`amb_mask.png`).
-
-Run it from the repository root:
+The [examples/synthetic](./examples/synthetic) folder contains a synthetic image with four circular instances, each designed to show the effect of one modification (#1, #3 and #4), as described in the paper. To run it (from the repository root):
 
 ```bash
 python examples/synthetic/run_synthetic_eval.py
 ```
-
-Expected output (values in %, as reported in the paper):
-
-```
-Using MERGED label-map GT (cannot show Mod #3 — overlaps are merged)
-Baseline                         PQ= 63.33  AJI= 71.41  Dice= 91.53  DQ= 75.00  SQ= 84.45
-Modification #1 (vague)          PQ= 84.45  AJI= 83.08  Dice= 99.70  DQ=100.00  SQ= 84.45
-Modification #4 (boundary)       PQ= 66.55  AJI= 72.04  Dice= 91.85  DQ= 75.00  SQ= 88.74
-
-Using OVERLAP-PRESERVING GT (list of masks) — enables Mod #3
-Baseline + Modification #3       PQ= 67.62  AJI= 78.44  Dice= 91.53  DQ= 75.00  SQ= 90.16
-Modification #1 + #3             PQ= 90.16  AJI= 91.26  Dice= 99.70  DQ=100.00  SQ= 90.16
-Modification #1 + #3 + #4        PQ= 94.61  AJI= 92.25  Dice=100.00  DQ=100.00  SQ= 94.61
-```
-
-Even with all applicable modifications, PQ, AJI and SQ do not reach 100%. This is expected: the prediction assigns the overlapping region to a single instance, which is a genuine difference from the overlap-preserving GT rather than an evaluation artifact.
 
 ---
 
@@ -283,10 +260,10 @@ The core implementation is adapted from [1].
 | Metric | What it measures | Range |
 |--------|-----------------|-------|
 | **Dice** | Pixel-level overlap (binary foreground) | 0-1 |
-| **AJI**  | Aggregated Jaccard Index  | 0–1 |
-| **DQ**   | Detection Quality - F1 score of instance matching | 0–1 |
-| **SQ**   | Segmentation Quality - mean IoU of matched pairs | 0–1 |
-| **PQ**   | Panoptic Quality = DQ × SQ | 0–1 |
+| **AJI**  | Aggregated Jaccard Index  | 0-1 |
+| **DQ**   | Detection Quality - F1 score of instance matching | 0-1 |
+| **SQ**   | Segmentation Quality - mean IoU of matched pairs | 0-1 |
+| **PQ**   | Panoptic Quality = DQ × SQ | 0-1 |
 
 ---
 
@@ -296,6 +273,21 @@ The implementations are available in the original publications. The 5-fold cross
 
 
 
+### Paths to adapt in `models_main`
+
+The training and inference scripts in `models_main` are **not** part of the NucEval function. They contain local paths (datasets, pretrained weights, configs and output folders) that need to be changed based on your own setup before running them:
+
+| File | Line(s) | What to set |
+|------|---------|-------------|
+| `Models/hover_net/run_hovernetFolds.py` | 23-24 | `images_dir`, `masks_dir` (dataset folders) |
+| `Models/HoverNext/run_hovernextFolds.py` | 146, 148 | `data_path` (dataset), `weight_path` (output folder) |
+| `Models/CellVit/cell_segmentation/run_cellvit_folds.py` | 169, 172, 174, 175 | config folder, pretrained encoder weights, dataset, log folder |
+| `Models/CellVit/base_ml/base_cli.py` | 49 | default config file path |
+| `Models/CellVit/configs/examples/cell_segmentation/train_cellvit.yaml` | 11, 12, 26, 37 | log folders, dataset path, pretrained encoder weights |
+| `Models/get_models.py` | 137, 139, 230 | SAM weights, dataset config file |
+
+The helper scripts in `models_main/utils`, `models_main/utilsHover` and `models_main/DataSetTools` also contain example paths in their test blocks; adapt them if you use those scripts directly.
+
 ---
 
 ## Citation
@@ -304,8 +296,8 @@ Preprint on arXiv: https://arxiv.org/abs/2605.03144
 If you use NucEval in your research, please cite the following:
 
 ```bibtex
-@misc{mahbod2026nucevalrobustevaluationframework,
-      title={NucEval: A Robust Evaluation Framework for Nuclear Instance Segmentation}, 
+@misc{mahbod2026nuceval,
+      title={NucEval: Revisiting and Extending Evaluation Metrics for Nuclear Instance Segmentation}, 
       author={Amirreza Mahbod and Ramona Woitek and Jeanne Shen},
       year={2026},
       eprint={2605.03144},
