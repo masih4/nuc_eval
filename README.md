@@ -286,8 +286,6 @@ The training and inference scripts in `models_main` are **not** part of the NucE
 | `Models/CellVit/configs/examples/cell_segmentation/train_cellvit.yaml` | 11, 12, 26, 37 | log folders, dataset path, pretrained encoder weights |
 | `Models/get_models.py` | 137, 139, 230 | SAM weights, dataset config file |
 
-The helper scripts in `models_main/utils`, `models_main/utilsHover` and `models_main/DataSetTools` also contain example paths in their test blocks; adapt them if you use those scripts directly.
-
 ---
 
 ## Citation
